@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -23,11 +24,11 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.ListSingleSelection;
 
-public class MapColumnTask extends AbstractTableColumnTask {
+public class MapColumnTask2 extends AbstractTableColumnTask {
 
     public static final boolean DEBUG = true;
 
-    MapColumnTask(final UndoSupport undoSupport, final CyColumn column) {
+    MapColumnTask2(final UndoSupport undoSupport, final CyColumn column) {
         super(column);
     }
 
@@ -36,25 +37,37 @@ public class MapColumnTask extends AbstractTableColumnTask {
         return "Id Mapping";
     }
 
-  
-    
     @Tunable(description = "Source (mapping from)")
     public ListSingleSelection<String> source_selection = new ListSingleSelection<String>(
-            IdMap.SYMBOL, IdMap.GENE_ID, IdMap.ENSEMBL, IdMap.UniProtKB_AC, IdMap.UniProtKB_ID);
+            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.UNIPROT),
+            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.NCBI),
+            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.GO),
+            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.ENSEMBL),
+            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.MGI) );
 
     @Tunable(description = "Target (mapping to)")
     public ListSingleSelection<String> target_selection = new ListSingleSelection<String>(
-            IdMap.SYMBOL, IdMap.GENE_ID, IdMap.ENSEMBL, IdMap.SYNONYMS, IdMap.UniProtKB_AC, IdMap.UniProtKB_ID,
-            IdMap.RefSeq, IdMap.GI, IdMap.PDB, IdMap.GO, IdMap.UniRef100, IdMap.UniRef90, IdMap.UniRef50, IdMap.UniParc, IdMap.PIR,
-            IdMap.EMBL);
+            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.UNIPROT),
+            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.NCBI),
+            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.GO),
+            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.ENSEMBL),
+            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.MGI) );
 
     @Tunable(description = "Species")
     public ListSingleSelection<String> species_selection = new ListSingleSelection<String>(
-            IdMap.HUMAN, IdMap.MOUSE, IdMap.FLY, IdMap.YEAST);
-  
-    
-    
- 
+            IdMapBridgeDb.Human,
+            IdMapBridgeDb.Mouse,
+            IdMapBridgeDb.Rat,
+            IdMapBridgeDb.Frog,
+            IdMapBridgeDb.Zebra_fish,
+            IdMapBridgeDb.Fruit_fly,
+            IdMapBridgeDb.Mosquito,
+            IdMapBridgeDb.Arabidopsis_thaliana,
+            IdMapBridgeDb.Yeast,
+            IdMapBridgeDb.Escherichia_coli,
+            IdMapBridgeDb.Tuberculosis
+            
+            );
 
     @Tunable(description = "New column name:")
     public String new_column_name;
@@ -89,15 +102,26 @@ public class MapColumnTask extends AbstractTableColumnTask {
                 }
             }
         }
-        final SortedSet<String> in_types = new TreeSet<String>();
-        in_types.add(IdMap.SYNONYMS);
-        in_types.add(source);
-
-        final String res;
+     
+     final Set<String> matched_ids;
+     final Set<String> unmatched_ids ;
+     final Map<String, IdMapping> res;
         try {
-            res = IdMap.runQuery(ids, target, source, IdMap.DEFAULT_MAP_SERVICE_URL_STR);
+            IdMapBridgeDb map = new IdMapBridgeDb(IdMapBridgeDb.DEFAULT_MAP_SERVICE_URL_STR);
+
+            res = map.map(ids, source, target,
+                    species, species);
+            
+            matched_ids = map.getMatchedIds();
+            unmatched_ids = map.getUnmatchedIds();
+            
+            for (Entry<String, IdMapping> entry : res.entrySet()) {
+                System.out.println(entry.getKey() + "=>" + entry.getValue());
+            }
+
+            
         }
-        catch (final IOException e) {
+        catch (final Exception e) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -108,28 +132,38 @@ public class MapColumnTask extends AbstractTableColumnTask {
             return;
         }
 
-        final SortedMap<String, SortedSet<String>> matched_ids = new TreeMap<String, SortedSet<String>>();
-        final SortedSet<String> unmatched_ids = new TreeSet<String>();
-
-        try {
-            IdMap.parseResponse(res, in_types, species, target, matched_ids,
-                    unmatched_ids);
-        }
-        catch (final IOException e) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    JOptionPane.showMessageDialog(null, e.getMessage(),
-                            "Id Mapping Error", JOptionPane.ERROR_MESSAGE);
-                }
-            });
-            return;
-        }
+//        final SortedMap<String, SortedSet<String>> matched_ids = new TreeMap<String, SortedSet<String>>();
+//        final SortedSet<String> unmatched_ids = new TreeSet<String>();
+//
+//        try {
+//            IdMap.parseResponse(res, in_types, species, target, matched_ids,
+//                    unmatched_ids);
+//        }
+//        catch (final IOException e) {
+//            SwingUtilities.invokeLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    JOptionPane.showMessageDialog(null, e.getMessage(),
+//                            "Id Mapping Error", JOptionPane.ERROR_MESSAGE);
+//                }
+//            });
+//            return;
+//        }
 
         System.out.println();
+        
+        System.out.println("Un-matched:");
+        if (unmatched_ids != null ) {
+            for (String u : unmatched_ids) {
+                System.out.println(u);
+            }
+        }
+        System.out.println();
         System.out.println("Matched:");
-        for (final Entry<String, SortedSet<String>> m : matched_ids.entrySet()) {
-            System.out.println(m.getKey() + "->" + m.getValue());
+        if (matched_ids != null ) {
+            for (String u : matched_ids) {
+                System.out.println(u);
+            }
         }
         System.out.println();
 
@@ -140,7 +174,9 @@ public class MapColumnTask extends AbstractTableColumnTask {
         int unique = 0;
         int min = Integer.MAX_VALUE;
         int max = 0;
-        for (final SortedSet<String> v : matched_ids.values()) {
+        
+        for (Entry<String, IdMapping> entry : res.entrySet()) {
+            final Set<String> v= entry.getValue().getTargetIds();
             if (v != null) {
                 if (v.size() > 1) {
                     all_unique = false;
@@ -157,6 +193,25 @@ public class MapColumnTask extends AbstractTableColumnTask {
                 }
             }
         }
+        
+        
+//        for (final SortedSet<String> v : matched_ids.values()) {
+//            if (v != null) {
+//                if (v.size() > 1) {
+//                    all_unique = false;
+//                    ++non_unique;
+//                    if (v.size() > max) {
+//                        max = v.size();
+//                    }
+//                    if (v.size() < min) {
+//                        min = v.size();
+//                    }
+//                }
+//                else {
+//                    ++unique;
+//                }
+//            }
+//        }
 
         final CyTable table = column.getTable();
 
@@ -167,7 +222,7 @@ public class MapColumnTask extends AbstractTableColumnTask {
                 table.createColumn(new_column_name, String.class, false);
             }
             else {
-                all_single = isAllSingle(source_is_list, matched_ids, table);
+                all_single = isAllSingle(source_is_list, res, table);
                 if (all_single) {
                     table.createColumn(new_column_name, String.class, false);
                 }
@@ -175,7 +230,7 @@ public class MapColumnTask extends AbstractTableColumnTask {
                     table.createListColumn(new_column_name, String.class, false);
                 }
             }
-            many_to_one = fillNewColumn(source_is_list, matched_ids, table,
+            many_to_one = fillNewColumn(source_is_list, res, table,
                     only_use_one || all_single);
         }
 
@@ -248,7 +303,7 @@ public class MapColumnTask extends AbstractTableColumnTask {
     }
 
     private final boolean fillNewColumn(boolean source_is_list,
-            final SortedMap<String, SortedSet<String>> matched_ids,
+            final Map<String, IdMapping> matched_ids,
             final CyTable table, final boolean single) {
         final List<CyRow> rows = table.getAllRows();
         boolean many_to_one = false;
@@ -262,8 +317,8 @@ public class MapColumnTask extends AbstractTableColumnTask {
                         final String in_val = (String) iv;
                         if ((in_val != null) && (in_val.length() > 0)) {
                             if (matched_ids.containsKey(in_val)) {
-                                final SortedSet<String> matched = matched_ids
-                                        .get(in_val);
+                                final Set<String> matched = matched_ids
+                                        .get(in_val).getTargetIds();
                                 if (!matched.isEmpty()) {
                                     for (final String m : matched) {
                                         if ((m != null) && (m.length() > 0)) {
@@ -297,8 +352,8 @@ public class MapColumnTask extends AbstractTableColumnTask {
                         column.getType());
                 if ((in_val != null) && (in_val.length() > 0)) {
                     if (matched_ids.containsKey(in_val)) {
-                        final SortedSet<String> matched = matched_ids
-                                .get(in_val);
+                        final Set<String> matched = matched_ids
+                                .get(in_val).getTargetIds();
                         if (!matched.isEmpty()) {
                             if (single) {
                                 row.set(new_column_name, matched.iterator()
@@ -409,7 +464,7 @@ public class MapColumnTask extends AbstractTableColumnTask {
     }
     
     private final boolean isAllSingle(boolean source_is_list,
-            final SortedMap<String, SortedSet<String>> matched_ids,
+            final Map<String, IdMapping> matched_ids,
             final CyTable table) {
         final List<CyRow> rows = table.getAllRows();
         final ArrayList<Set<String>> list = new ArrayList<Set<String>>();
@@ -425,10 +480,10 @@ public class MapColumnTask extends AbstractTableColumnTask {
                         final String in_val = (String) iv;
                         if ((in_val != null) && (in_val.length() > 0)) {
                             if (matched_ids.containsKey(in_val)) {
-                                final SortedSet<String> matched = matched_ids
+                                final IdMapping matched = matched_ids
                                         .get(in_val);
-                                if (!matched.isEmpty()) {
-                                    for (final String m : matched) {
+                                if (!matched.getTargetIds().isEmpty()) {
+                                    for (final String m : matched.getTargetIds()) {
                                         if ((m != null) && (m.length() > 0)) {
 
                                             ts.add(m);
@@ -450,8 +505,8 @@ public class MapColumnTask extends AbstractTableColumnTask {
                         column.getType());
                 if ((in_val != null) && (in_val.length() > 0)) {
                     if (matched_ids.containsKey(in_val)) {
-                        final SortedSet<String> matched = matched_ids
-                                .get(in_val);
+                        final Set<String> matched = matched_ids
+                                .get(in_val).getTargetIds();
                         if (!matched.isEmpty()) {
                             // if (single) {
                             // row.set(new_column_name, matched.iterator()
