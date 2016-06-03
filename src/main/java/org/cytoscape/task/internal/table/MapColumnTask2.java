@@ -37,21 +37,43 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
         return "Id Mapping";
     }
 
+   
+    
+    
     @Tunable(description = "Source (mapping from)")
     public ListSingleSelection<String> source_selection = new ListSingleSelection<String>(
-            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.UNIPROT),
-            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.NCBI),
-            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.GO),
-            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.ENSEMBL),
-            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.MGI) );
+            IdMapBridgeDb.ENSEMBL,
+            IdMapBridgeDb.EMBL,
+            IdMapBridgeDb.Entrez_Gene,
+            IdMapBridgeDb.Gene_ID,
+            IdMapBridgeDb.GO,
+            IdMapBridgeDb.GenBank,
+            IdMapBridgeDb.Illumina,
+            IdMapBridgeDb.InterPro,
+            IdMapBridgeDb.MGI,
+            IdMapBridgeDb.PDB,
+            IdMapBridgeDb.RefSeq,
+            IdMapBridgeDb.UniGene,
+            IdMapBridgeDb.UNIPROT,
+            IdMapBridgeDb.UCSC_Genome_Browser
+            );
 
     @Tunable(description = "Target (mapping to)")
     public ListSingleSelection<String> target_selection = new ListSingleSelection<String>(
-            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.UNIPROT),
-            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.NCBI),
-            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.GO),
-            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.ENSEMBL),
-            IdMapBridgeDb.LABELS.get(IdMapBridgeDb.MGI) );
+            IdMapBridgeDb.ENSEMBL,
+            IdMapBridgeDb.EMBL,
+            IdMapBridgeDb.Entrez_Gene,
+            IdMapBridgeDb.Gene_ID,
+            IdMapBridgeDb.GO,
+            IdMapBridgeDb.GenBank,
+            IdMapBridgeDb.Illumina,
+            IdMapBridgeDb.InterPro,
+            IdMapBridgeDb.MGI,
+            IdMapBridgeDb.PDB,
+            IdMapBridgeDb.RefSeq,
+            IdMapBridgeDb.UniGene,
+            IdMapBridgeDb.UNIPROT,
+            IdMapBridgeDb.UCSC_Genome_Browser );
 
     @Tunable(description = "Species")
     public ListSingleSelection<String> species_selection = new ListSingleSelection<String>(
@@ -62,6 +84,7 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
             IdMapBridgeDb.Zebra_fish,
             IdMapBridgeDb.Fruit_fly,
             IdMapBridgeDb.Mosquito,
+            IdMapBridgeDb.Worm,
             IdMapBridgeDb.Arabidopsis_thaliana,
             IdMapBridgeDb.Yeast,
             IdMapBridgeDb.Escherichia_coli,
@@ -77,8 +100,8 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
 
     @Override
     public void run(TaskMonitor taskMonitor) {
-        final String target = target_selection.getSelectedValue();
-        final String source = source_selection.getSelectedValue();
+        final String target = IdMapBridgeDb.LONG_TO_SHORT.get(target_selection.getSelectedValue());
+        final String source = IdMapBridgeDb.LONG_TO_SHORT.get(source_selection.getSelectedValue());
         final String species = species_selection.getSelectedValue();
 
         boolean source_is_list = false;
@@ -104,7 +127,7 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
         }
      
      final Set<String> matched_ids;
-     final Set<String> unmatched_ids ;
+     final Set<String> unmatched_ids;
      final Map<String, IdMapping> res;
         try {
             IdMapBridgeDb map = new IdMapBridgeDb(IdMapBridgeDb.DEFAULT_MAP_SERVICE_URL_STR);
@@ -114,11 +137,6 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
             
             matched_ids = map.getMatchedIds();
             unmatched_ids = map.getUnmatchedIds();
-            
-            for (Entry<String, IdMapping> entry : res.entrySet()) {
-                System.out.println(entry.getKey() + "=>" + entry.getValue());
-            }
-
             
         }
         catch (final Exception e) {
@@ -132,23 +150,6 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
             return;
         }
 
-//        final SortedMap<String, SortedSet<String>> matched_ids = new TreeMap<String, SortedSet<String>>();
-//        final SortedSet<String> unmatched_ids = new TreeSet<String>();
-//
-//        try {
-//            IdMap.parseResponse(res, in_types, species, target, matched_ids,
-//                    unmatched_ids);
-//        }
-//        catch (final IOException e) {
-//            SwingUtilities.invokeLater(new Runnable() {
-//                @Override
-//                public void run() {
-//                    JOptionPane.showMessageDialog(null, e.getMessage(),
-//                            "Id Mapping Error", JOptionPane.ERROR_MESSAGE);
-//                }
-//            });
-//            return;
-//        }
 
         System.out.println();
         
@@ -194,25 +195,7 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
             }
         }
         
-        
-//        for (final SortedSet<String> v : matched_ids.values()) {
-//            if (v != null) {
-//                if (v.size() > 1) {
-//                    all_unique = false;
-//                    ++non_unique;
-//                    if (v.size() > max) {
-//                        max = v.size();
-//                    }
-//                    if (v.size() < min) {
-//                        min = v.size();
-//                    }
-//                }
-//                else {
-//                    ++unique;
-//                }
-//            }
-//        }
-
+     
         final CyTable table = column.getTable();
 
         boolean many_to_one = false;
@@ -238,8 +221,8 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
 
         if (matched_ids.size() < 1) {
             msg = "Failed to map any identifier" + "\n" + "Total identifiers: "
-                    + ids.size() + "\n" + "Source type: " + source + "\n"
-                    + "Target type: " + target;
+                    + ids.size() + "\n" + "Source type: " + IdMapBridgeDb.SHORT_TO_LONG.get(source) + "\n"
+                    + "Target type: " + IdMapBridgeDb.SHORT_TO_LONG.get( target );
         }
         else {
             final String o2o;
@@ -266,8 +249,8 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
                     + "\n" + "Total source identifiers: " + ids.size() + "\n"
                     + o2o
                     + m2o
-                    + "Source type: " + source + "\n" + "Target type: "
-                    + target + "\n"
+                    + "Source type: " + IdMapBridgeDb.SHORT_TO_LONG.get(source) + "\n" + "Target type: "
+                    + IdMapBridgeDb.SHORT_TO_LONG.get(target) + "\n"
                     + "New column: " + new_column_name;
         }
 
@@ -286,8 +269,12 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
 
     private final void validateNewColumnName(final String target,
             final String source) {
+        
+        final String my_target = IdMapBridgeDb.SHORT_TO_LONG.get(target);
+        final String my_source = IdMapBridgeDb.SHORT_TO_LONG.get(source);
+        
         if ((new_column_name == null) || (new_column_name.trim().length() < 1)) {
-            new_column_name = column.getName() + ": " + source + "->" + target;
+            new_column_name = column.getName() + ": " + my_source + "->" + my_target;
         }
         new_column_name = new_column_name.trim();
         final CyTable table = column.getTable();

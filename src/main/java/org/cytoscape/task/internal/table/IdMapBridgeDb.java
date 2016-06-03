@@ -17,32 +17,65 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class IdMapBridgeDb implements IdMapper {
-    
-   
-    public static final String ENSEMBL = "En";
-    public static final String GO = "T";
-    public static final String UNIPROT = "S";
-    public static final String MGI = "M";
-    public static final String NCBI = "Q";
-    
-    public static final Map<String, String> LABELS = new HashMap<String, String>();
+
+    public static final String ENSEMBL = "Ensembl";
+    public static final String GO = "Gene Ontology";
+    public static final String UNIPROT = "UniProt";
+    public static final String MGI = "MGI";
+    //
+    public static final String Gene_ID = "Gene_ID";
+    public static final String EMBL = "EMBL";
+    public static final String Entrez_Gene = "Entrez Gene";
+    public static final String GenBank = "GenBank";
+    public static final String Illumina = "Illumina";
+    public static final String InterPro = "Uniprot-TrEMBL";
+    public static final String UniGene = " UniGene";
+    public static final String UCSC_Genome_Browser = "UCSC Genome Browser";
+    public static final String RefSeq = "RefSeq";
+    public static final String PDB = "PDB";
+
+    public static final Map<String, String> LONG_TO_SHORT = new HashMap<String, String>();
     static {
-        LABELS.put(ENSEMBL, "Ensembl");
-        LABELS.put(GO, "GO");
-        LABELS.put(UNIPROT, "UniProt");
-        LABELS.put(MGI, "MGI");
-        LABELS.put(NCBI , "NCBI");
-       
+        LONG_TO_SHORT.put(ENSEMBL, "En");
+        LONG_TO_SHORT.put(GO, "T");
+        LONG_TO_SHORT.put(UNIPROT, "S");
+        LONG_TO_SHORT.put(MGI, "M");
+        LONG_TO_SHORT.put(Gene_ID, "Wg");
+        LONG_TO_SHORT.put(EMBL, "Em");
+        LONG_TO_SHORT.put(Entrez_Gene, "L");
+        LONG_TO_SHORT.put(GenBank, "G");
+        LONG_TO_SHORT.put(Illumina, "Il");
+        LONG_TO_SHORT.put(InterPro, "I");
+        LONG_TO_SHORT.put(UniGene, "U");
+        LONG_TO_SHORT.put(UCSC_Genome_Browser, "Uc");
+        LONG_TO_SHORT.put(RefSeq, "Q");
+        LONG_TO_SHORT.put(PDB, "Pd");
     }
-        
-    
+
+    public static final Map<String, String> SHORT_TO_LONG = new HashMap<String, String>();
+    static {
+        SHORT_TO_LONG.put("En", ENSEMBL);
+        SHORT_TO_LONG.put("T", GO);
+        SHORT_TO_LONG.put("S", UNIPROT);
+        SHORT_TO_LONG.put("M", MGI);
+        SHORT_TO_LONG.put("Wg", Gene_ID);
+        SHORT_TO_LONG.put("Em", EMBL);
+        SHORT_TO_LONG.put("L", Entrez_Gene);
+        SHORT_TO_LONG.put("G", GenBank);
+        SHORT_TO_LONG.put("Il", Illumina);
+        SHORT_TO_LONG.put("I", InterPro);
+        SHORT_TO_LONG.put("U", UniGene);
+        SHORT_TO_LONG.put("Uc", UCSC_Genome_Browser);
+        SHORT_TO_LONG.put("Q", RefSeq);
+        SHORT_TO_LONG.put("Pd", PDB);
+    }
+
     public static final String DEFAULT_MAP_SERVICE_URL_STR = "http://webservice.bridgedb.org/batch";
-    
-    
-    public static final String Human  = "Human";
-    public static final String Mouse  = "Mouse";
-    public static final String Rat  = "Rat";
-    public static final String Frog  = "Frog";
+
+    public static final String Human = "Human";
+    public static final String Mouse = "Mouse";
+    public static final String Rat = "Rat";
+    public static final String Frog = "Frog";
     public static final String Zebra_fish = "Zebra fish";
     public static final String Fruit_fly = "Fruit fly";
     public static final String Mosquito = "Mosquito";
@@ -50,8 +83,10 @@ public class IdMapBridgeDb implements IdMapper {
     public static final String Yeast = "Yeast";
     public static final String Escherichia_coli = "Escherichia coli";
     public static final String Tuberculosis = "Tuberculosis";
+    public static final String Worm = "Worm";
 
     public static final boolean DEBUG = true;
+
     private String _url;
     private Set<String> _unmatched_ids;
     private Set<String> _matched_ids;
@@ -75,28 +110,31 @@ public class IdMapBridgeDb implements IdMapper {
             String source_type, String target_type, String source_species,
             String target_species) {
         List<String> res = null;
+        _matched_ids = new TreeSet<String>();
+        _unmatched_ids = new TreeSet<String>();
         try {
-            res = IdMapBridgeDb
-                    .runQuery(query_ids, target_species, "xrefs", source_type, _url);
-            
+            res = IdMapBridgeDb.runQuery(query_ids, target_species, "xrefs",
+                    source_type, _url);
         }
         catch (IOException e) {
             e.printStackTrace();
         }
-
-        for (String l : res) {
-            System.out.println(l);
-        }
         if (res != null) {
-            try {
-                Map<String, IdMapping> map = new TreeMap<String, IdMapping>();
-                
-                parseResponse(res, source_type, target_species, target_type,
-                        map);
-                return map;
+            for (String l : res) {
+                System.out.println(l);
             }
-            catch (IOException e) {
-                e.printStackTrace();
+            if (res != null) {
+                try {
+                    final Map<String, IdMapping> map = new TreeMap<String, IdMapping>();
+
+                    parseResponse(res, source_type, target_species,
+                            target_type, map);
+                    return map;
+
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return null;
@@ -106,8 +144,6 @@ public class IdMapBridgeDb implements IdMapper {
             final String in_type, final String target_species,
             final String target_type, final Map<String, IdMapping> map)
             throws IOException {
-        
-        _matched_ids = new TreeSet<String>();
 
         for (final String s : res) {
             final String[] s1 = s.split("\t");
@@ -119,7 +155,6 @@ public class IdMapBridgeDb implements IdMapper {
             idmap.setTargetType(target_type);
             idmap.setSourceType(s1[1]);
             idmap.addSourceId(s1[0]);
-            // System.out.println(s1[0]);
 
             final String[] s2 = s1[2].split(",");
 
@@ -131,16 +166,19 @@ public class IdMapBridgeDb implements IdMapper {
                         throw new IOException("illegal format: " + s);
                     }
                     if (s3[0].equals(target_type)) {
-                        // System.out.println(s3[0] + " => " + s3[1]);
                         idmap.addTargetId(s3[1]);
 
                     }
                 }
             }
             System.out.println(idmap);
-            map.put(s1[0], idmap);
-            _matched_ids.add(s1[0]);
-
+            if (idmap.getTargetIds().size() > 0) {
+                map.put(s1[0], idmap);
+                _matched_ids.add(s1[0]);
+            }
+            else {
+                _unmatched_ids.add(s1[0]);
+            }
         }
 
     }
@@ -156,7 +194,6 @@ public class IdMapBridgeDb implements IdMapper {
         final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestMethod("POST");
-        // conn.setRequestProperty("Content-Type", "application/json");
 
         final OutputStream os = conn.getOutputStream();
         os.write(query.getBytes());
@@ -186,13 +223,9 @@ public class IdMapBridgeDb implements IdMapper {
     }
 
     private final static List<String> runQuery(final Collection<String> ids,
-                                              final String species,
-                                              final String target,
-                                              final String database,
+            final String species, final String target, final String database,
             final String url_str) throws IOException {
         final String query = makeQuery(ids);
-        // System.out.println("url=" + url_str);
-        // System.out.println("query=" + query);
         return post(url_str, species, target, database, query);
     }
 
@@ -219,14 +252,12 @@ public class IdMapBridgeDb implements IdMapper {
         return sb;
     }
 
-  
-
     @Override
     public Map<String, IdGuess> guess(Collection<String> query_ids,
             String source_species) {
         return null;
     }
-    
+
     public static void main(final String[] args) throws IOException {
         final Collection<String> ids = new ArrayList<String>();
 
@@ -236,7 +267,7 @@ public class IdMapBridgeDb implements IdMapper {
         // ids.add("ENSMUSG00000037031");
         // }
         ids.add("ENSMUSG00000037031");
-        
+
         IdMapBridgeDb map = new IdMapBridgeDb(DEFAULT_MAP_SERVICE_URL_STR);
 
         String source_type = "En";
@@ -246,15 +277,11 @@ public class IdMapBridgeDb implements IdMapper {
 
         Map<String, IdMapping> x = map.map(ids, source_type, target_type,
                 source_species, target_species);
-        
-        for (Entry<String, IdMapping> entry : x.entrySet())
-        {
+
+        for (Entry<String, IdMapping> entry : x.entrySet()) {
             System.out.println(entry.getKey() + "=>" + entry.getValue());
         }
 
-        
-
     }
-    
- 
+
 }
