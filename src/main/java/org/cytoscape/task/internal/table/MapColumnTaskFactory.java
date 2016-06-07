@@ -10,7 +10,7 @@ public interface MapColumnTaskFactory extends TableColumnTaskFactory {
      * Create a task iterator for renaming a selected column. The created task
      * will run synchronously in the current thread and will not create a task
      * monitor.
-     * 
+     *
      * @param column
      *            The selected column for renaming.
      * @param newColumnName

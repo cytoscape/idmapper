@@ -8,28 +8,39 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory implements MapColumnTaskFactory {
 
-    private final UndoSupport   undoSupport;
+    private final UndoSupport undoSupport;
 
-    private final TunableSetter tunableSetter;
+    public static enum MAP_SERVICE {
+        KO, BRIDGE_DB;
+    }
+
+    final private MAP_SERVICE ms = MAP_SERVICE.KO;
 
     public MapColumnTaskFactoryImpl(final UndoSupport undoSupport,
                                     final TunableSetter tunableSetter) {
         this.undoSupport = undoSupport;
-        this.tunableSetter = tunableSetter;
     }
 
     @Override
     public TaskIterator createTaskIterator(final CyColumn column) {
+
         if (column == null) {
             throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
         }
-        return new TaskIterator(new MapColumnTask2(undoSupport,
-                                                   column));
+
+        switch (ms) {
+        case BRIDGE_DB:
+            return new TaskIterator(new MapColumnTaskBridgeDb(undoSupport,
+                                                              column));
+        default:
+            return new TaskIterator(new MapColumnTaskKO(undoSupport,
+                                                        column));
+        }
     }
 
     @Override
     public TaskIterator createTaskIterator(final CyColumn column, final String newColumnName) {
-        // TODO Auto-generated method stub
+
         return null;
     }
 

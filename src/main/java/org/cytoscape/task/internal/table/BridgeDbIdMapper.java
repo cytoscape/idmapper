@@ -37,33 +37,33 @@ public class BridgeDbIdMapper implements IdMapper {
     public static final Map<String, String> LONG_TO_SHORT               = new HashMap<String, String>();
     static {
         LONG_TO_SHORT.put(ENSEMBL,
-                          "En");
+                "En");
         LONG_TO_SHORT.put(GO,
-                          "T");
+                "T");
         LONG_TO_SHORT.put(UNIPROT,
-                          "S");
+                "S");
         LONG_TO_SHORT.put(MGI,
-                          "M");
+                "M");
         LONG_TO_SHORT.put(Gene_ID,
-                          "Wg");
+                "Wg");
         LONG_TO_SHORT.put(EMBL,
-                          "Em");
+                "Em");
         LONG_TO_SHORT.put(Entrez_Gene,
-                          "L");
+                "L");
         LONG_TO_SHORT.put(GenBank,
-                          "G");
+                "G");
         LONG_TO_SHORT.put(Illumina,
-                          "Il");
+                "Il");
         LONG_TO_SHORT.put(InterPro,
-                          "I");
+                "I");
         LONG_TO_SHORT.put(UniGene,
-                          "U");
+                "U");
         LONG_TO_SHORT.put(UCSC_Genome_Browser,
-                          "Uc");
+                "Uc");
         LONG_TO_SHORT.put(RefSeq,
-                          "Q");
+                "Q");
         LONG_TO_SHORT.put(PDB,
-                          "Pd");
+                "Pd");
     }
 
     public static final Map<String, String> SHORT_TO_LONG               = new HashMap<String, String>();

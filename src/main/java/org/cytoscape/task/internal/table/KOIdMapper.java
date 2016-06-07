@@ -92,12 +92,12 @@ public class KOIdMapper implements IdMapper {
                                             final String target_type,
                                             final Map<String, SortedSet<String>> matched_ids,
                                             final Set<String> unmatched_ids) throws IOException, JsonProcessingException {
-        if (MapColumnTask.DEBUG) {
+        if (MapColumnTaskKO.DEBUG) {
             System.out.println("str =" + json_str);
         }
         final ObjectMapper mapper = new ObjectMapper();
         final JsonNode root = mapper.readTree(json_str);
-        if (MapColumnTask.DEBUG) {
+        if (MapColumnTaskKO.DEBUG) {
             System.out.println("root=" + root);
         }
 
@@ -165,7 +165,7 @@ public class KOIdMapper implements IdMapper {
         conn.setDoOutput(true);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type",
-                                "application/json");
+                "application/json");
         if (DEBUG) {
             System.out.println(json_query);
         }
