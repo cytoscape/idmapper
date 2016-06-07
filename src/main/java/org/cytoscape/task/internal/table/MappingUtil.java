@@ -12,8 +12,7 @@ import org.cytoscape.model.CyTable;
 
 public final class MappingUtil {
 
-    public final static void addCleanedStrValueToList(final List<String> ids,
-            final Object v) {
+    public final static void addCleanedStrValueToList(final List<String> ids, final Object v) {
         if ((ids != null) && (v != null)) {
             String v_str = (String) v;
             if (v_str != null) {
@@ -26,23 +25,24 @@ public final class MappingUtil {
     }
 
     public final static boolean fillNewColumn(final boolean source_is_list,
-            final Map<String, IdMapping> matched_ids, final CyTable table,
-            final CyColumn column, final String new_column_name,
-            final boolean single) {
+                                              final Map<String, IdMapping> matched_ids,
+                                              final CyTable table,
+                                              final CyColumn column,
+                                              final String new_column_name,
+                                              final boolean single) {
         final List<CyRow> rows = table.getAllRows();
         boolean many_to_one = false;
         if (source_is_list) {
             for (final CyRow row : rows) {
                 final List in_vals = (List) row.get(column.getName(),
-                        column.getType());
+                                                    column.getType());
                 if (in_vals != null) {
                     final TreeSet<String> ts = new TreeSet<String>();
                     for (final Object iv : in_vals) {
                         final String in_val = (String) iv;
                         if ((in_val != null) && (in_val.length() > 0)) {
                             if (matched_ids.containsKey(in_val)) {
-                                final Set<String> matched = matched_ids.get(
-                                        in_val).getTargetIds();
+                                final Set<String> matched = matched_ids.get(in_val).getTargetIds();
                                 if (!matched.isEmpty()) {
                                     for (final String m : matched) {
                                         if ((m != null) && (m.length() > 0)) {
@@ -61,10 +61,12 @@ public final class MappingUtil {
                     final List<String> l = new ArrayList<String>(ts);
                     if (!l.isEmpty()) {
                         if (single) {
-                            row.set(new_column_name, l.get(0));
+                            row.set(new_column_name,
+                                    l.get(0));
                         }
                         else {
-                            row.set(new_column_name, l);
+                            row.set(new_column_name,
+                                    l);
                         }
                     }
                 }
@@ -73,15 +75,14 @@ public final class MappingUtil {
         else {
             for (final CyRow row : rows) {
                 final String in_val = (String) row.get(column.getName(),
-                        column.getType());
+                                                       column.getType());
                 if ((in_val != null) && (in_val.length() > 0)) {
                     if (matched_ids.containsKey(in_val)) {
-                        final Set<String> matched = matched_ids.get(in_val)
-                                .getTargetIds();
+                        final Set<String> matched = matched_ids.get(in_val).getTargetIds();
                         if (!matched.isEmpty()) {
                             if (single) {
-                                row.set(new_column_name, matched.iterator()
-                                        .next());
+                                row.set(new_column_name,
+                                        matched.iterator().next());
                             }
                             else {
                                 final TreeSet<String> ts = new TreeSet<String>();
@@ -96,7 +97,8 @@ public final class MappingUtil {
                                     }
                                 }
                                 final List<String> l = new ArrayList<String>(ts);
-                                row.set(new_column_name, l);
+                                row.set(new_column_name,
+                                        l);
                             }
                         }
                     }
@@ -106,9 +108,7 @@ public final class MappingUtil {
         return many_to_one;
     }
 
-    public final static boolean isAllSingle(final boolean source_is_list,
-            final Map<String, IdMapping> matched_ids, final CyColumn column,
-            final CyTable table) {
+    public final static boolean isAllSingle(final boolean source_is_list, final Map<String, IdMapping> matched_ids, final CyColumn column, final CyTable table) {
         final List<CyRow> rows = table.getAllRows();
         final ArrayList<Set<String>> list = new ArrayList<Set<String>>();
         if (source_is_list) {
@@ -116,18 +116,16 @@ public final class MappingUtil {
             for (final CyRow row : rows) {
 
                 final List in_vals = (List) row.get(column.getName(),
-                        column.getType());
+                                                    column.getType());
                 if (in_vals != null) {
                     final TreeSet<String> ts = new TreeSet<String>();
                     for (final Object iv : in_vals) {
                         final String in_val = (String) iv;
                         if ((in_val != null) && (in_val.length() > 0)) {
                             if (matched_ids.containsKey(in_val)) {
-                                final IdMapping matched = matched_ids
-                                        .get(in_val);
+                                final IdMapping matched = matched_ids.get(in_val);
                                 if (!matched.getTargetIds().isEmpty()) {
-                                    for (final String m : matched
-                                            .getTargetIds()) {
+                                    for (final String m : matched.getTargetIds()) {
                                         if ((m != null) && (m.length() > 0)) {
 
                                             ts.add(m);
@@ -146,11 +144,10 @@ public final class MappingUtil {
         else {
             for (final CyRow row : rows) {
                 final String in_val = (String) row.get(column.getName(),
-                        column.getType());
+                                                       column.getType());
                 if ((in_val != null) && (in_val.length() > 0)) {
                     if (matched_ids.containsKey(in_val)) {
-                        final Set<String> matched = matched_ids.get(in_val)
-                                .getTargetIds();
+                        final Set<String> matched = matched_ids.get(in_val).getTargetIds();
                         if (!matched.isEmpty()) {
                             // if (single) {
                             // row.set(new_column_name, matched.iterator()
@@ -183,16 +180,13 @@ public final class MappingUtil {
         return all_single;
     }
 
-    public final static String validateNewColumnName(final String target,
-            final String source, final String new_column_name,
-            final CyColumn column) {
+    public final static String validateNewColumnName(final String target, final String source, final String new_column_name, final CyColumn column) {
 
         final String my_target = BridgeDbIdMapper.SHORT_TO_LONG.get(target);
         final String my_source = BridgeDbIdMapper.SHORT_TO_LONG.get(source);
         String my_col_name;
         if ((new_column_name == null) || (new_column_name.trim().length() < 1)) {
-            my_col_name = column.getName() + ": " + my_source + "->"
-                    + my_target;
+            my_col_name = column.getName() + ": " + my_source + "->" + my_target;
         }
         else {
             my_col_name = new_column_name.trim();
@@ -211,18 +205,21 @@ public final class MappingUtil {
     }
 
     public final static String createMsg(final String new_column_name,
-            final String target, final String source, final List<String> ids,
-            final Set<String> matched_ids, final boolean all_unique,
-            final int non_unique, final int unique, final int min,
-            final int max, final boolean many_to_one) {
+                                         final String target,
+                                         final String source,
+                                         final List<String> ids,
+                                         final Set<String> matched_ids,
+                                         final boolean all_unique,
+                                         final int non_unique,
+                                         final int unique,
+                                         final int min,
+                                         final int max,
+                                         final boolean many_to_one) {
         final String msg;
 
         if (matched_ids.size() < 1) {
-            msg = "Failed to map any identifier" + "\n" + "Total identifiers: "
-                    + ids.size() + "\n" + "Source type: "
-                    + BridgeDbIdMapper.SHORT_TO_LONG.get(source) + "\n"
-                    + "Target type: "
-                    + BridgeDbIdMapper.SHORT_TO_LONG.get(target);
+            msg = "Failed to map any identifier" + "\n" + "Total identifiers: " + ids.size() + "\n" + "Source type: "
+                    + BridgeDbIdMapper.SHORT_TO_LONG.get(source) + "\n" + "Target type: " + BridgeDbIdMapper.SHORT_TO_LONG.get(target);
         }
         else {
             final String o2o;
@@ -231,9 +228,8 @@ public final class MappingUtil {
                 o2o = "All mappings one-to-one" + "\n";
             }
             else {
-                o2o = "Not all mappings one-to-one:" + "\n" + "  one-to-one: "
-                        + unique + "\n" + "  one-to-many: " + non_unique
-                        + " (range: " + min + "-" + max + ")" + "\n";
+                o2o = "Not all mappings one-to-one:" + "\n" + "  one-to-one: " + unique + "\n" + "  one-to-many: " + non_unique + " (range: " + min + "-" + max
+                        + ")" + "\n";
             }
 
             final String m2o;
@@ -245,12 +241,8 @@ public final class MappingUtil {
 
             }
 
-            msg = "Successfully mapped identifiers: " + matched_ids.size()
-                    + "\n" + "Total source identifiers: " + ids.size() + "\n"
-                    + o2o + m2o + "Source type: "
-                    + BridgeDbIdMapper.SHORT_TO_LONG.get(source) + "\n"
-                    + "Target type: "
-                    + BridgeDbIdMapper.SHORT_TO_LONG.get(target) + "\n"
+            msg = "Successfully mapped identifiers: " + matched_ids.size() + "\n" + "Total source identifiers: " + ids.size() + "\n" + o2o + m2o
+                    + "Source type: " + BridgeDbIdMapper.SHORT_TO_LONG.get(source) + "\n" + "Target type: " + BridgeDbIdMapper.SHORT_TO_LONG.get(target) + "\n"
                     + "New column: " + new_column_name;
         }
         return msg;

@@ -5,14 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeSet;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.AbstractTableColumnTask;
 import org.cytoscape.work.ProvidesTitle;
@@ -25,7 +22,8 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
 
     public static final boolean DEBUG = true;
 
-    MapColumnTask2(final UndoSupport undoSupport, final CyColumn column) {
+    MapColumnTask2(final UndoSupport undoSupport,
+                   final CyColumn column) {
         super(column);
     }
 
@@ -35,48 +33,61 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
     }
 
     @Tunable(description = "Source (mapping from)")
-    public ListSingleSelection<String> source_selection = new ListSingleSelection<String>(
-            BridgeDbIdMapper.ENSEMBL, BridgeDbIdMapper.EMBL,
-            BridgeDbIdMapper.Entrez_Gene, BridgeDbIdMapper.Gene_ID,
-            BridgeDbIdMapper.GO, BridgeDbIdMapper.GenBank,
-            BridgeDbIdMapper.Illumina, BridgeDbIdMapper.InterPro,
-            BridgeDbIdMapper.MGI, BridgeDbIdMapper.PDB,
-            BridgeDbIdMapper.RefSeq, BridgeDbIdMapper.UniGene,
-            BridgeDbIdMapper.UNIPROT, BridgeDbIdMapper.UCSC_Genome_Browser);
+    public ListSingleSelection<String> source_selection  = new ListSingleSelection<String>(BridgeDbIdMapper.ENSEMBL,
+            BridgeDbIdMapper.EMBL,
+            BridgeDbIdMapper.Entrez_Gene,
+            BridgeDbIdMapper.Gene_ID,
+            BridgeDbIdMapper.GO,
+            BridgeDbIdMapper.GenBank,
+            BridgeDbIdMapper.Illumina,
+            BridgeDbIdMapper.InterPro,
+            BridgeDbIdMapper.MGI,
+            BridgeDbIdMapper.PDB,
+            BridgeDbIdMapper.RefSeq,
+            BridgeDbIdMapper.UniGene,
+            BridgeDbIdMapper.UNIPROT,
+            BridgeDbIdMapper.UCSC_Genome_Browser);
 
     @Tunable(description = "Target (mapping to)")
-    public ListSingleSelection<String> target_selection = new ListSingleSelection<String>(
-            BridgeDbIdMapper.ENSEMBL, BridgeDbIdMapper.EMBL,
-            BridgeDbIdMapper.Entrez_Gene, BridgeDbIdMapper.Gene_ID,
-            BridgeDbIdMapper.GO, BridgeDbIdMapper.GenBank,
-            BridgeDbIdMapper.Illumina, BridgeDbIdMapper.InterPro,
-            BridgeDbIdMapper.MGI, BridgeDbIdMapper.PDB,
-            BridgeDbIdMapper.RefSeq, BridgeDbIdMapper.UniGene,
-            BridgeDbIdMapper.UNIPROT, BridgeDbIdMapper.UCSC_Genome_Browser);
+    public ListSingleSelection<String> target_selection  = new ListSingleSelection<String>(BridgeDbIdMapper.ENSEMBL,
+            BridgeDbIdMapper.EMBL,
+            BridgeDbIdMapper.Entrez_Gene,
+            BridgeDbIdMapper.Gene_ID,
+            BridgeDbIdMapper.GO,
+            BridgeDbIdMapper.GenBank,
+            BridgeDbIdMapper.Illumina,
+            BridgeDbIdMapper.InterPro,
+            BridgeDbIdMapper.MGI,
+            BridgeDbIdMapper.PDB,
+            BridgeDbIdMapper.RefSeq,
+            BridgeDbIdMapper.UniGene,
+            BridgeDbIdMapper.UNIPROT,
+            BridgeDbIdMapper.UCSC_Genome_Browser);
 
     @Tunable(description = "Species")
-    public ListSingleSelection<String> species_selection = new ListSingleSelection<String>(
-            BridgeDbIdMapper.Human, BridgeDbIdMapper.Mouse,
-            BridgeDbIdMapper.Rat, BridgeDbIdMapper.Frog,
-            BridgeDbIdMapper.Zebra_fish, BridgeDbIdMapper.Fruit_fly,
-            BridgeDbIdMapper.Mosquito, BridgeDbIdMapper.Worm,
-            BridgeDbIdMapper.Arabidopsis_thaliana, BridgeDbIdMapper.Yeast,
-            BridgeDbIdMapper.Escherichia_coli, BridgeDbIdMapper.Tuberculosis
-
-    );
+    public ListSingleSelection<String> species_selection = new ListSingleSelection<String>(BridgeDbIdMapper.Human,
+            BridgeDbIdMapper.Mouse,
+            BridgeDbIdMapper.Rat,
+            BridgeDbIdMapper.Frog,
+            BridgeDbIdMapper.Zebra_fish,
+            BridgeDbIdMapper.Fruit_fly,
+            BridgeDbIdMapper.Mosquito,
+            BridgeDbIdMapper.Worm,
+            BridgeDbIdMapper.Arabidopsis_thaliana,
+            BridgeDbIdMapper.Yeast,
+            BridgeDbIdMapper.Escherichia_coli,
+            BridgeDbIdMapper.Tuberculosis);
 
     @Tunable(description = "New column name:")
-    public String new_column_name;
+    public String                      new_column_name;
 
     @Tunable(description = "Force single ")
-    public boolean only_use_one = false;
+    public boolean                     only_use_one      = false;
 
     @Override
     public void run(final TaskMonitor taskMonitor) {
-        final String target = BridgeDbIdMapper.LONG_TO_SHORT
-                .get(target_selection.getSelectedValue());
-        final String source = BridgeDbIdMapper.LONG_TO_SHORT
-                .get(source_selection.getSelectedValue());
+        final String target = BridgeDbIdMapper.LONG_TO_SHORT.get(target_selection.getSelectedValue());
+        final String source = BridgeDbIdMapper.LONG_TO_SHORT.get(source_selection.getSelectedValue());
         final String species = species_selection.getSelectedValue();
 
         boolean source_is_list = false;
@@ -92,11 +103,13 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
             if (v != null) {
                 if (source_is_list) {
                     for (final Object lv : (List) v) {
-                        MappingUtil.addCleanedStrValueToList(ids, lv);
+                        MappingUtil.addCleanedStrValueToList(ids,
+                                                             lv);
                     }
                 }
                 else {
-                    MappingUtil.addCleanedStrValueToList(ids, v);
+                    MappingUtil.addCleanedStrValueToList(ids,
+                                                         v);
                 }
             }
         }
@@ -105,10 +118,13 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
         final Set<String> unmatched_ids;
         final Map<String, IdMapping> res;
         try {
-            final BridgeDbIdMapper map = new BridgeDbIdMapper(
-                    BridgeDbIdMapper.DEFAULT_MAP_SERVICE_URL_STR);
+            final BridgeDbIdMapper map = new BridgeDbIdMapper(BridgeDbIdMapper.DEFAULT_MAP_SERVICE_URL_STR);
 
-            res = map.map(ids, source, target, species, species);
+            res = map.map(ids,
+                          source,
+                          target,
+                          species,
+                          species);
 
             matched_ids = map.getMatchedIds();
             unmatched_ids = map.getUnmatchedIds();
@@ -118,8 +134,10 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    JOptionPane.showMessageDialog(null, e.getMessage(),
-                            "Id Mapping Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null,
+                                                  e.getMessage(),
+                                                  "Id Mapping Error",
+                                                  JOptionPane.ERROR_MESSAGE);
                 }
             });
             return;
@@ -142,7 +160,10 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
         }
         System.out.println();
 
-        new_column_name = MappingUtil.validateNewColumnName(target, source,new_column_name, column);
+        new_column_name = MappingUtil.validateNewColumnName(target,
+                                                            source,
+                                                            new_column_name,
+                                                            column);
 
         boolean all_unique = true;
         int non_unique = 0;
@@ -175,15 +196,24 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
         if (matched_ids.size() > 0) {
             boolean all_single = false;
             if (only_use_one) {
-                table.createColumn(new_column_name, String.class, false);
+                table.createColumn(new_column_name,
+                                   String.class,
+                                   false);
             }
             else {
-                all_single = MappingUtil.isAllSingle(source_is_list, res, column, table );
+                all_single = MappingUtil.isAllSingle(source_is_list,
+                                                     res,
+                                                     column,
+                                                     table);
                 if (all_single) {
-                    table.createColumn(new_column_name, String.class, false);
+                    table.createColumn(new_column_name,
+                                       String.class,
+                                       false);
                 }
                 else {
-                    table.createListColumn(new_column_name, String.class, false);
+                    table.createListColumn(new_column_name,
+                                           String.class,
+                                           false);
                 }
             }
             many_to_one = MappingUtil.fillNewColumn(source_is_list,
@@ -191,26 +221,34 @@ public class MapColumnTask2 extends AbstractTableColumnTask {
                                                     table,
                                                     column,
                                                     new_column_name,
-                                                    only_use_one || all_single);  
+                                                    only_use_one || all_single);
         }
 
-        final String msg = MappingUtil.createMsg(new_column_name,target, source, ids, matched_ids, all_unique,
-                non_unique, unique, min, max, many_to_one);
+        final String msg = MappingUtil.createMsg(new_column_name,
+                                                 target,
+                                                 source,
+                                                 ids,
+                                                 matched_ids,
+                                                 all_unique,
+                                                 non_unique,
+                                                 unique,
+                                                 min,
+                                                 max,
+                                                 many_to_one);
 
-        taskMonitor.showMessage(TaskMonitor.Level.INFO, msg);
+        taskMonitor.showMessage(TaskMonitor.Level.INFO,
+                                msg);
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                JOptionPane.showMessageDialog(null, msg, "Id Mapping Result",
-                        matched_ids.size() < 1 ? JOptionPane.WARNING_MESSAGE
-                                : JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null,
+                                              msg,
+                                              "Id Mapping Result",
+                                              matched_ids.size() < 1 ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE);
             }
         });
 
     }
 
-
-
- 
 }
