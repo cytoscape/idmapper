@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class IdMap {
+public class KOIdMapper implements IdMapper {
 
     // https://github.com/cytoscape-ci/service-idmapping
     public static final String UniProtKB_AC = "UniProtKB-AC";
@@ -41,32 +42,52 @@ public class IdMap {
     public static final String MOUSE = "mouse";
     public static final String FLY = "fly";
     public static final String YEAST = "yeast";
-    
+
     private static final String UNMATCHED = "unmatched";
     private static final String MATCHED = "matched";
     private static final String MATCHES = "matches";
     private static final String IN = "in";
     private static final String IN_TYPE = "inType";
     private static final String SPECIES = "species";
-    
+
     public static final boolean DEBUG = true;
 
-    
-    public final static void addCleanedStrValueToList(final List<String> ids,
-            final Object v) {
-        if ((ids != null) && (v != null)) {
-            String v_str = (String) v;
-            if (v_str != null) {
-                v_str = v_str.trim();
-                if (v_str.length() > 0) {
-                    ids.add(v_str);
-                }
-            }
-        }
+    private final String _url;
+    private Set<String> _unmatched_ids;
+    private Set<String> _matched_ids;
+
+    public KOIdMapper(final String url) {
+        _url = url;
     }
 
+    @Override
+    public Set<String> getUnmatchedIds() {
+        return _unmatched_ids;
+    }
 
-    public final static void parseResponse(final String json_str,
+    @Override
+    public Set<String> getMatchedIds() {
+        return _matched_ids;
+    }
+
+    @Override
+    public Map<String, IdMapping> map(final Collection<String> query_ids,
+            final String source_type, final String target_type,
+            final String source_species, final String target_species) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Map<String, IdGuess> guess(final Collection<String> query_ids,
+            final String source_species) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+   
+
+    private final static void parseResponse(final String json_str,
             final Set<String> in_types, final String target_species,
             final String target_type,
             final Map<String, SortedSet<String>> matched_ids,
@@ -80,9 +101,9 @@ public class IdMap {
         if (MapColumnTask.DEBUG) {
             System.out.println("root=" + root);
         }
-    
+
         final JsonNode unmatched = root.path(UNMATCHED);
-    
+
         final Iterator<JsonNode> unmatched_it = unmatched.elements();
         while (unmatched_it.hasNext()) {
             unmatched_ids.add(unmatched_it.next().asText());
@@ -90,9 +111,9 @@ public class IdMap {
         if (!root.has(MATCHED)) {
             throw new IOException("no " + MATCHED + " field");
         }
-    
+
         final JsonNode matched = root.path(MATCHED);
-    
+
         final Iterator<JsonNode> matched_it = matched.elements();
         while (matched_it.hasNext()) {
             final JsonNode n = matched_it.next();
@@ -141,10 +162,9 @@ public class IdMap {
         }
     }
 
-
-    public static final String post(final String url_str,
+    private static final String post(final String url_str,
             final String source_type, final String json_query)
-                    throws IOException {
+            throws IOException {
         final URL url = new URL(url_str);
         final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
@@ -156,7 +176,7 @@ public class IdMap {
         final OutputStream os = conn.getOutputStream();
         os.write(json_query.getBytes());
         os.flush();
-    
+
         if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
             if (conn.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
                 throw new IOException(
@@ -167,33 +187,31 @@ public class IdMap {
                         + conn.getResponseCode());
             }
         }
-    
+
         final BufferedReader br = new BufferedReader(new InputStreamReader(
                 (conn.getInputStream())));
-    
+
         final StringBuilder sb = new StringBuilder();
         String line;
         while ((line = br.readLine()) != null) {
             sb.append(line);
         }
-    
+
         br.close();
         conn.disconnect();
         os.close();
-    
+
         return sb.toString();
     }
 
-
-    public final static String runQuery(final List<String> ids,
+    private final static String runQuery(final List<String> ids,
             final String target_type, final String source_type, final String url)
-                    throws IOException {
+            throws IOException {
         final String json_query = makeQuery(ids, target_type);
         System.out.println("url=" + url);
         System.out.println("json_query=" + json_query);
         return post(url, source_type, json_query);
     }
-
 
     private final static void addMappedId(
             final Map<String, SortedSet<String>> matched_ids, final String in,
@@ -205,7 +223,6 @@ public class IdMap {
             matched_ids.get(in).add(id);
         }
     }
-
 
     private final static StringBuilder listToString(final List<String> l) {
         final StringBuilder sb = new StringBuilder();
@@ -223,7 +240,6 @@ public class IdMap {
         }
         return sb;
     }
-
 
     private static final String makeQuery(final List<String> ids,
             final String target_type) {

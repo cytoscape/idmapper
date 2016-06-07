@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -40,17 +41,17 @@ public class MapColumnTask extends AbstractTableColumnTask {
     
     @Tunable(description = "Source (mapping from)")
     public ListSingleSelection<String> source_selection = new ListSingleSelection<String>(
-            IdMap.SYMBOL, IdMap.GENE_ID, IdMap.ENSEMBL, IdMap.UniProtKB_AC, IdMap.UniProtKB_ID);
+            KOIdMapper.SYMBOL, KOIdMapper.GENE_ID, KOIdMapper.ENSEMBL, KOIdMapper.UniProtKB_AC, KOIdMapper.UniProtKB_ID);
 
     @Tunable(description = "Target (mapping to)")
     public ListSingleSelection<String> target_selection = new ListSingleSelection<String>(
-            IdMap.SYMBOL, IdMap.GENE_ID, IdMap.ENSEMBL, IdMap.SYNONYMS, IdMap.UniProtKB_AC, IdMap.UniProtKB_ID,
-            IdMap.RefSeq, IdMap.GI, IdMap.PDB, IdMap.GO, IdMap.UniRef100, IdMap.UniRef90, IdMap.UniRef50, IdMap.UniParc, IdMap.PIR,
-            IdMap.EMBL);
+            KOIdMapper.SYMBOL, KOIdMapper.GENE_ID, KOIdMapper.ENSEMBL, KOIdMapper.SYNONYMS, KOIdMapper.UniProtKB_AC, KOIdMapper.UniProtKB_ID,
+            KOIdMapper.RefSeq, KOIdMapper.GI, KOIdMapper.PDB, KOIdMapper.GO, KOIdMapper.UniRef100, KOIdMapper.UniRef90, KOIdMapper.UniRef50, KOIdMapper.UniParc, KOIdMapper.PIR,
+            KOIdMapper.EMBL);
 
     @Tunable(description = "Species")
     public ListSingleSelection<String> species_selection = new ListSingleSelection<String>(
-            IdMap.HUMAN, IdMap.MOUSE, IdMap.FLY, IdMap.YEAST);
+            KOIdMapper.HUMAN, KOIdMapper.MOUSE, KOIdMapper.FLY, KOIdMapper.YEAST);
   
     
     
@@ -81,23 +82,32 @@ public class MapColumnTask extends AbstractTableColumnTask {
             if (v != null) {
                 if (source_is_list) {
                     for (final Object lv : (List) v) {
-                        IdMap.addCleanedStrValueToList(ids, lv);
+                        MappingUtil.addCleanedStrValueToList(ids, lv);
                     }
                 }
                 else {
-                    IdMap.addCleanedStrValueToList(ids, v);
+                    MappingUtil.addCleanedStrValueToList(ids, v);
                 }
             }
         }
         final SortedSet<String> in_types = new TreeSet<String>();
-        in_types.add(IdMap.SYNONYMS);
+        in_types.add(KOIdMapper.SYNONYMS);
         in_types.add(source);
 
-        final String res;
+        final Set<String> matched_ids;
+        final Set<String> unmatched_ids;
+        final Map<String, IdMapping> res;
         try {
-            res = IdMap.runQuery(ids, target, source, IdMap.DEFAULT_MAP_SERVICE_URL_STR);
+            final KOIdMapper map = new KOIdMapper(
+                    KOIdMapper.DEFAULT_MAP_SERVICE_URL_STR);
+
+            res = map.map(ids, source, target, species, species);
+
+            matched_ids = map.getMatchedIds();
+            unmatched_ids = map.getUnmatchedIds();
+
         }
-        catch (final IOException e) {
+        catch (final Exception e) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -107,31 +117,50 @@ public class MapColumnTask extends AbstractTableColumnTask {
             });
             return;
         }
+        
+        System.out.println();
 
-        final SortedMap<String, SortedSet<String>> matched_ids = new TreeMap<String, SortedSet<String>>();
-        final SortedSet<String> unmatched_ids = new TreeSet<String>();
-
-        try {
-            IdMap.parseResponse(res, in_types, species, target, matched_ids,
-                    unmatched_ids);
+        System.out.println("Un-matched:");
+        if (unmatched_ids != null) {
+            for (final String u : unmatched_ids) {
+                System.out.println(u);
+            }
         }
-        catch (final IOException e) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    JOptionPane.showMessageDialog(null, e.getMessage(),
-                            "Id Mapping Error", JOptionPane.ERROR_MESSAGE);
-                }
-            });
-            return;
-        }
-
         System.out.println();
         System.out.println("Matched:");
-        for (final Entry<String, SortedSet<String>> m : matched_ids.entrySet()) {
-            System.out.println(m.getKey() + "->" + m.getValue());
+        if (matched_ids != null) {
+            for (final String u : matched_ids) {
+                System.out.println(u);
+            }
         }
         System.out.println();
+        
+       
+
+//        final SortedMap<String, SortedSet<String>> matched_ids = new TreeMap<String, SortedSet<String>>();
+//        final SortedSet<String> unmatched_ids = new TreeSet<String>();
+//
+//        try {
+//            KOIdMapper.parseResponse(res, in_types, species, target, matched_ids,
+//                    unmatched_ids);
+//        }
+//        catch (final IOException e) {
+//            SwingUtilities.invokeLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    JOptionPane.showMessageDialog(null, e.getMessage(),
+//                            "Id Mapping Error", JOptionPane.ERROR_MESSAGE);
+//                }
+//            });
+//            return;
+//        }
+
+//        System.out.println();
+//        System.out.println("Matched:");
+//        for (final Entry<String, SortedSet<String>> m : matched_ids.entrySet()) {
+//            System.out.println(m.getKey() + "->" + m.getValue());
+//        }
+//        System.out.println();
 
         validateNewColumnName(target, source);
 
@@ -140,7 +169,9 @@ public class MapColumnTask extends AbstractTableColumnTask {
         int unique = 0;
         int min = Integer.MAX_VALUE;
         int max = 0;
-        for (final SortedSet<String> v : matched_ids.values()) {
+        
+        for (final Entry<String, IdMapping> entry : res.entrySet()) {
+            final Set<String> v = entry.getValue().getTargetIds();
             if (v != null) {
                 if (v.size() > 1) {
                     all_unique = false;
@@ -167,7 +198,7 @@ public class MapColumnTask extends AbstractTableColumnTask {
                 table.createColumn(new_column_name, String.class, false);
             }
             else {
-                all_single = isAllSingle(source_is_list, matched_ids, table);
+                all_single = isAllSingle(source_is_list, res, table);
                 if (all_single) {
                     table.createColumn(new_column_name, String.class, false);
                 }
@@ -175,7 +206,11 @@ public class MapColumnTask extends AbstractTableColumnTask {
                     table.createListColumn(new_column_name, String.class, false);
                 }
             }
-            many_to_one = fillNewColumn(source_is_list, matched_ids, table,
+            many_to_one = MappingUtil.fillNewColumn(source_is_list,
+                    res,
+                    table,
+                    column,
+                    new_column_name,
                     only_use_one || all_single);
         }
 
@@ -328,89 +363,9 @@ public class MapColumnTask extends AbstractTableColumnTask {
     }
 
     
-    private final boolean fillNewColumn2(boolean source_is_list,
-            final SortedMap<String, IdMapping> matched_ids,
-            final CyTable table, final boolean single) {
-        final List<CyRow> rows = table.getAllRows();
-        boolean many_to_one = false;
-        if (source_is_list) {
-            for (final CyRow row : rows) {
-                final List in_vals = (List) row.get(column.getName(),
-                        column.getType());
-                if (in_vals != null) {
-                    final TreeSet<String> ts = new TreeSet<String>();
-                    for (final Object iv : in_vals) {
-                        final String in_val = (String) iv;
-                        if ((in_val != null) && (in_val.length() > 0)) {
-                            if (matched_ids.containsKey(in_val)) {
-                                final Set<String> matched = matched_ids
-                                        .get(in_val).getTargetIds();
-                                if (!matched.isEmpty()) {
-                                    for (final String m : matched) {
-                                        if ((m != null) && (m.length() > 0)) {
-                                            if (ts.contains(m)) {
-                                                many_to_one = true;
-                                            }
-                                            else {
-                                                ts.add(m);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    final List<String> l = new ArrayList<String>(ts);
-                    if (!l.isEmpty()) {
-                        if (single) {
-                            row.set(new_column_name, l.get(0));
-                        }
-                        else {
-                            row.set(new_column_name, l);
-                        }
-                    }
-                }
-            }
-        }
-        else {
-            for (final CyRow row : rows) {
-                final String in_val = (String) row.get(column.getName(),
-                        column.getType());
-                if ((in_val != null) && (in_val.length() > 0)) {
-                    if (matched_ids.containsKey(in_val)) {
-                        final Set<String> matched = matched_ids
-                                .get(in_val).getTargetIds();
-                        if (!matched.isEmpty()) {
-                            if (single) {
-                                row.set(new_column_name, matched.iterator()
-                                        .next());
-                            }
-                            else {
-                                final TreeSet<String> ts = new TreeSet<String>();
-                                for (final String m : matched) {
-                                    if ((m != null) && (m.length() > 0)) {
-                                        if (ts.contains(m)) {
-                                            many_to_one = true;
-                                        }
-                                        else {
-                                            ts.add(m);
-                                        }
-                                    }
-                                }
-                                final List<String> l = new ArrayList<String>(ts);
-                                row.set(new_column_name, l);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return many_to_one;
-    }
-    
-    private final boolean isAllSingle(boolean source_is_list,
-            final SortedMap<String, SortedSet<String>> matched_ids,
-            final CyTable table) {
+   
+    private final boolean isAllSingle(final boolean source_is_list,
+            final Map<String, IdMapping> matched_ids, final CyTable table) {
         final List<CyRow> rows = table.getAllRows();
         final ArrayList<Set<String>> list = new ArrayList<Set<String>>();
         if (source_is_list) {
@@ -425,10 +380,11 @@ public class MapColumnTask extends AbstractTableColumnTask {
                         final String in_val = (String) iv;
                         if ((in_val != null) && (in_val.length() > 0)) {
                             if (matched_ids.containsKey(in_val)) {
-                                final SortedSet<String> matched = matched_ids
+                                final IdMapping matched = matched_ids
                                         .get(in_val);
-                                if (!matched.isEmpty()) {
-                                    for (final String m : matched) {
+                                if (!matched.getTargetIds().isEmpty()) {
+                                    for (final String m : matched
+                                            .getTargetIds()) {
                                         if ((m != null) && (m.length() > 0)) {
 
                                             ts.add(m);
@@ -450,8 +406,8 @@ public class MapColumnTask extends AbstractTableColumnTask {
                         column.getType());
                 if ((in_val != null) && (in_val.length() > 0)) {
                     if (matched_ids.containsKey(in_val)) {
-                        final SortedSet<String> matched = matched_ids
-                                .get(in_val);
+                        final Set<String> matched = matched_ids.get(in_val)
+                                .getTargetIds();
                         if (!matched.isEmpty()) {
                             // if (single) {
                             // row.set(new_column_name, matched.iterator()

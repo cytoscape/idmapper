@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class IdMapBridgeDb implements IdMapper {
+public class BridgeDbIdMapper implements IdMapper {
 
     public static final String ENSEMBL = "Ensembl";
     public static final String GO = "Gene Ontology";
@@ -87,11 +87,11 @@ public class IdMapBridgeDb implements IdMapper {
 
     public static final boolean DEBUG = true;
 
-    private String _url;
+    private final String _url;
     private Set<String> _unmatched_ids;
     private Set<String> _matched_ids;
 
-    public IdMapBridgeDb(String url) {
+    public BridgeDbIdMapper(final String url) {
         _url = url;
     }
 
@@ -106,21 +106,21 @@ public class IdMapBridgeDb implements IdMapper {
     }
 
     @Override
-    public Map<String, IdMapping> map(Collection<String> query_ids,
-            String source_type, String target_type, String source_species,
-            String target_species) {
+    public Map<String, IdMapping> map(final Collection<String> query_ids,
+            final String source_type, final String target_type,
+            final String source_species, final String target_species) {
         List<String> res = null;
         _matched_ids = new TreeSet<String>();
         _unmatched_ids = new TreeSet<String>();
         try {
-            res = IdMapBridgeDb.runQuery(query_ids, target_species, "xrefs",
+            res = BridgeDbIdMapper.runQuery(query_ids, target_species, "xrefs",
                     source_type, _url);
         }
-        catch (IOException e) {
+        catch (final IOException e) {
             e.printStackTrace();
         }
         if (res != null) {
-            for (String l : res) {
+            for (final String l : res) {
                 System.out.println(l);
             }
             if (res != null) {
@@ -132,7 +132,7 @@ public class IdMapBridgeDb implements IdMapper {
                     return map;
 
                 }
-                catch (IOException e) {
+                catch (final IOException e) {
                     e.printStackTrace();
                 }
             }
@@ -143,14 +143,14 @@ public class IdMapBridgeDb implements IdMapper {
     private final void parseResponse(final List<String> res,
             final String in_type, final String target_species,
             final String target_type, final Map<String, IdMapping> map)
-            throws IOException {
+                    throws IOException {
 
         for (final String s : res) {
             final String[] s1 = s.split("\t");
             if (s1.length != 3) {
                 throw new IOException("illegal format: " + s);
             }
-            IdMappingImpl idmap = new IdMappingImpl();
+            final IdMappingImpl idmap = new IdMappingImpl();
             idmap.setTargetSpecies(target_species);
             idmap.setTargetType(target_type);
             idmap.setSourceType(s1[1]);
@@ -158,8 +158,8 @@ public class IdMapBridgeDb implements IdMapper {
 
             final String[] s2 = s1[2].split(",");
 
-            for (String s2_str : s2) {
-                if (s2_str != null && !s2_str.toLowerCase().equals("n/a")) {
+            for (final String s2_str : s2) {
+                if ((s2_str != null) && !s2_str.toLowerCase().equals("n/a")) {
                     // System.out.println(s2_str);
                     final String[] s3 = s2_str.split(":", 2);
                     if (s3.length != 2) {
@@ -253,8 +253,8 @@ public class IdMapBridgeDb implements IdMapper {
     }
 
     @Override
-    public Map<String, IdGuess> guess(Collection<String> query_ids,
-            String source_species) {
+    public Map<String, IdGuess> guess(final Collection<String> query_ids,
+            final String source_species) {
         return null;
     }
 
@@ -263,22 +263,20 @@ public class IdMapBridgeDb implements IdMapper {
 
         ids.add("ENSMUSG00000063455");
         ids.add("ENSMUSG00000073823");
-        // for (int i = 0; i < 10000; i++) {
-        // ids.add("ENSMUSG00000037031");
-        // }
         ids.add("ENSMUSG00000037031");
 
-        IdMapBridgeDb map = new IdMapBridgeDb(DEFAULT_MAP_SERVICE_URL_STR);
+        final BridgeDbIdMapper map = new BridgeDbIdMapper(
+                DEFAULT_MAP_SERVICE_URL_STR);
 
-        String source_type = "En";
-        String target_type = "S";
-        String source_species = "Mouse";
-        String target_species = "Mouse";
+        final String source_type = "En";
+        final String target_type = "S";
+        final String source_species = "Mouse";
+        final String target_species = "Mouse";
 
-        Map<String, IdMapping> x = map.map(ids, source_type, target_type,
+        final Map<String, IdMapping> x = map.map(ids, source_type, target_type,
                 source_species, target_species);
 
-        for (Entry<String, IdMapping> entry : x.entrySet()) {
+        for (final Entry<String, IdMapping> entry : x.entrySet()) {
             System.out.println(entry.getKey() + "=>" + entry.getValue());
         }
 
