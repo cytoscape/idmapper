@@ -48,7 +48,6 @@ public class KOIdMapper implements IdMapper {
     public static final String  YEAST                       = "yeast";
 
     // Terms used in the json respone:
-    private static final String UNMATCHED                   = "unmatched";
     private static final String MATCHED                     = "matched";
     private static final String MATCHES                     = "matches";
     private static final String IN                          = "in";
@@ -101,31 +100,34 @@ public class KOIdMapper implements IdMapper {
             e.printStackTrace();
         }
         if (json_str != null) {
-
-            System.out.println(json_str);
-
+            if (DEBUG) {
+                System.out.println(json_str);
+            }
             try {
-                final Map<String, IdMapping> map = new TreeMap<String, IdMapping>();
                 final SortedSet<String> in_types = new TreeSet<String>();
                 in_types.add(KOIdMapper.SYNONYMS);
                 in_types.add(source_type);
-                parseResponse(json_str,
-                              in_types,
-                              target_species,
-                              target_type,
-                              map);
+                final Map<String, IdMapping> res = parseResponse(json_str,
+                                                                 in_types,
+                                                                 target_species,
+                                                                 target_type);
 
-                for (final String id : map.keySet()) {
-                    _matched_ids.add(id);
+                for (final String id : res.keySet()) {
+                    if (DEBUG) {
+                        System.out.println(res.get(id));
+                    }
+                    if (!res.get(id).getTargetIds().isEmpty()) {
+                        _matched_ids.add(id);
+                    }
                 }
 
                 for (final String query_id : query_ids) {
                     if (!_matched_ids.contains(query_id)) {
-                        _matched_ids.add(query_id);
+                        _unmatched_ids.add(query_id);
                     }
                 }
 
-                return map;
+                return res;
 
             }
             catch (final IOException e) {
@@ -142,14 +144,31 @@ public class KOIdMapper implements IdMapper {
         return null;
     }
 
-    private final static void parseResponse(final String json_str,
-                                            final Set<String> in_types,
-                                            final String target_species,
-                                            final String target_type,
-                                            final Map<String, IdMapping> map) throws IOException, JsonProcessingException {
+    /**
+     * This parses the Json response.
+     *
+     *
+     * @param json_str
+     *            to response to be parsed
+     * @param source_types
+     *            the source types
+     * @param target_species
+     *            the target species (the same as the source species)
+     * @param target_type
+     *            the target type
+     * 
+     * @return the result of the parsing as Map of String to IdMapping
+     * @throws IOException
+     * @throws JsonProcessingException
+     */
+    private final static Map<String, IdMapping> parseResponse(final String json_str,
+                                                              final Set<String> source_types,
+                                                              final String target_species,
+                                                              final String target_type) throws IOException, JsonProcessingException {
         if (DEBUG) {
             System.out.println("str =" + json_str);
         }
+        final Map<String, IdMapping> res = new TreeMap<String, IdMapping>();
         final ObjectMapper mapper = new ObjectMapper();
         final JsonNode root = mapper.readTree(json_str);
         if (DEBUG) {
@@ -167,8 +186,8 @@ public class KOIdMapper implements IdMapper {
             final JsonNode n = matched_it.next();
             if (n.has(SPECIES)) {
                 if (target_species.equals(n.get(SPECIES).asText())) {
-                    if (in_types.contains(n.get(IN_TYPE).asText())) {
-                        final String in = n.get(IN).asText();
+                    if (source_types.contains(n.get(IN_TYPE).asText())) {
+                        final String source_id = n.get(IN).asText();
                         if (n.has(MATCHES)) {
                             final JsonNode m = n.get(MATCHES);
                             if (m.size() > 0) {
@@ -178,15 +197,19 @@ public class KOIdMapper implements IdMapper {
                                         final Iterator<JsonNode> it = target_ids.iterator();
                                         while (it.hasNext()) {
                                             final JsonNode target_id = it.next();
-                                            addMappedId(map,
-                                                        in,
-                                                        target_id.asText());
+                                            addMappedId(res,
+                                                        source_id,
+                                                        target_id.asText(),
+                                                        target_species,
+                                                        target_type);
                                         }
                                     }
                                     else {
-                                        addMappedId(map,
-                                                    in,
-                                                    target_ids.asText());
+                                        addMappedId(res,
+                                                    source_id,
+                                                    target_ids.asText(),
+                                                    target_species,
+                                                    target_type);
                                     }
                                 }
                                 else {
@@ -208,10 +231,19 @@ public class KOIdMapper implements IdMapper {
                 throw new IOException("no species: " + target_species);
             }
         }
+        return res;
     }
 
+    /**
+     * This posts a Json formatted query to a URL.
+     * 
+     * 
+     * @param url_str the URL to post to
+     * @param json_query the Json query
+     * @return the response as String
+     * @throws IOException
+     */
     private static final String post(final String url_str,
-                                     final String source_type,
                                      final String json_query) throws IOException {
         final URL url = new URL(url_str);
         final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -261,19 +293,25 @@ public class KOIdMapper implements IdMapper {
             System.out.println("json_query=" + json_query);
         }
         return post(url,
-                    source_type,
                     json_query);
     }
 
-    private final static void addMappedId(final Map<String, IdMapping> map,
-                                          final String in,
-                                          final String id) {
-        if ((id != null) && (id.length() > 0)) {
-            if (!map.containsKey(in)) {
-                map.put(in,
+    private final static void addMappedId(final Map<String, IdMapping> res,
+                                          final String source_id,
+                                          final String target_id,
+                                          final String species,
+                                          final String target_type) {
+        if ((target_id != null) && (target_id.length() > 0)) {
+            if (!res.containsKey(source_id)) {
+                res.put(source_id,
                         new IdMappingImpl());
             }
-            map.get(in).getTargetIds().add(id);
+            final IdMappingImpl m = (IdMappingImpl) res.get(source_id);
+            m.addSourceId(source_id);
+            m.addTargetId(target_id);
+            m.setTargetSpecies(species);
+            m.setSourceSpecies(species);
+            m.setTargetType(target_type);
         }
     }
 

@@ -10,6 +10,15 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 
+
+
+/**
+ * Utility methods for Id mapping clients.
+ * 
+ * 
+ * @author cmzmasek
+ *
+ */
 public final class MappingUtil {
 
     /**
@@ -190,11 +199,6 @@ public final class MappingUtil {
                     if (res.containsKey(in_val)) {
                         final Set<String> matched = res.get(in_val).getTargetIds();
                         if (!matched.isEmpty()) {
-                            // if (single) {
-                            // row.set(new_column_name, matched.iterator()
-                            // .next());
-                            // }
-                            // else {
                             final TreeSet<String> ts = new TreeSet<String>();
                             for (final String m : matched) {
                                 if ((m != null) && (m.length() > 0)) {
@@ -203,9 +207,7 @@ public final class MappingUtil {
 
                                 }
                             }
-                            // final List<String> l = new ArrayList<String>(ts);
                             list.add(ts);
-                            // }
                         }
                     }
                 }
