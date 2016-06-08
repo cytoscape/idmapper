@@ -39,7 +39,8 @@ public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory imp
     }
 
     @Override
-    public TaskIterator createTaskIterator(final CyColumn column, final String newColumnName) {
+    public TaskIterator createTaskIterator(final CyColumn column,
+                                           final String newColumnName) {
 
         return null;
     }

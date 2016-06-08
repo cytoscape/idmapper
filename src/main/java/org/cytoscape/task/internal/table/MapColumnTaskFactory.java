@@ -17,6 +17,7 @@ public interface MapColumnTaskFactory extends TableColumnTaskFactory {
      *            The new name for the selected column.
      * @return a task iterator of type {@link TaskIterator}.
      */
-    TaskIterator createTaskIterator(CyColumn column, String newColumnName);
+    TaskIterator createTaskIterator(CyColumn column,
+                                    String newColumnName);
 
 }

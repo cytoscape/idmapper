@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -36,34 +34,34 @@ public class MapColumnTaskKO extends AbstractTableColumnTask {
 
     @Tunable(description = "Source (mapping from)")
     public ListSingleSelection<String> source_selection  = new ListSingleSelection<String>(KOIdMapper.SYMBOL,
-                                                                                           KOIdMapper.GENE_ID,
-                                                                                           KOIdMapper.ENSEMBL,
-                                                                                           KOIdMapper.UniProtKB_AC,
-                                                                                           KOIdMapper.UniProtKB_ID);
+            KOIdMapper.GENE_ID,
+            KOIdMapper.ENSEMBL,
+            KOIdMapper.UniProtKB_AC,
+            KOIdMapper.UniProtKB_ID);
 
     @Tunable(description = "Target (mapping to)")
     public ListSingleSelection<String> target_selection  = new ListSingleSelection<String>(KOIdMapper.SYMBOL,
-                                                                                           KOIdMapper.GENE_ID,
-                                                                                           KOIdMapper.ENSEMBL,
-                                                                                           KOIdMapper.SYNONYMS,
-                                                                                           KOIdMapper.UniProtKB_AC,
-                                                                                           KOIdMapper.UniProtKB_ID,
-                                                                                           KOIdMapper.RefSeq,
-                                                                                           KOIdMapper.GI,
-                                                                                           KOIdMapper.PDB,
-                                                                                           KOIdMapper.GO,
-                                                                                           KOIdMapper.UniRef100,
-                                                                                           KOIdMapper.UniRef90,
-                                                                                           KOIdMapper.UniRef50,
-                                                                                           KOIdMapper.UniParc,
-                                                                                           KOIdMapper.PIR,
-                                                                                           KOIdMapper.EMBL);
+            KOIdMapper.GENE_ID,
+            KOIdMapper.ENSEMBL,
+            KOIdMapper.SYNONYMS,
+            KOIdMapper.UniProtKB_AC,
+            KOIdMapper.UniProtKB_ID,
+            KOIdMapper.RefSeq,
+            KOIdMapper.GI,
+            KOIdMapper.PDB,
+            KOIdMapper.GO,
+            KOIdMapper.UniRef100,
+            KOIdMapper.UniRef90,
+            KOIdMapper.UniRef50,
+            KOIdMapper.UniParc,
+            KOIdMapper.PIR,
+            KOIdMapper.EMBL);
 
     @Tunable(description = "Species")
     public ListSingleSelection<String> species_selection = new ListSingleSelection<String>(KOIdMapper.HUMAN,
-                                                                                           KOIdMapper.MOUSE,
-                                                                                           KOIdMapper.FLY,
-                                                                                           KOIdMapper.YEAST);
+            KOIdMapper.MOUSE,
+            KOIdMapper.FLY,
+            KOIdMapper.YEAST);
 
     @Tunable(description = "New column name:")
     public String                      new_column_name;
@@ -100,9 +98,9 @@ public class MapColumnTaskKO extends AbstractTableColumnTask {
                 }
             }
         }
-      //  final SortedSet<String> in_types = new TreeSet<String>();
-       // in_types.add(KOIdMapper.SYNONYMS);
-       // in_types.add(source);
+        // final SortedSet<String> in_types = new TreeSet<String>();
+        // in_types.add(KOIdMapper.SYNONYMS);
+        // in_types.add(source);
 
         final Set<String> matched_ids;
         final Set<String> unmatched_ids;
@@ -150,10 +148,10 @@ public class MapColumnTaskKO extends AbstractTableColumnTask {
         }
         System.out.println();
 
-        new_column_name = MappingUtil.validateNewColumnName(target,
-                                                            source,
-                                                            new_column_name,
-                                                            column);
+        new_column_name = MappingUtil.makeNewColumnName(target,
+                                                        source,
+                                                        new_column_name,
+                                                        column);
 
         boolean all_unique = true;
         int non_unique = 0;

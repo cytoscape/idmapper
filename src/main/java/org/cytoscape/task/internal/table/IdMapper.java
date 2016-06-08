@@ -55,6 +55,7 @@ public interface IdMapper {
                                       final String source_species,
                                       final String target_species);
 
-    public Map<String, IdGuess> guess(final Collection<String> query_ids, final String source_species);
+    public Map<String, IdGuess> guess(final Collection<String> query_ids,
+                                      final String source_species);
 
 }

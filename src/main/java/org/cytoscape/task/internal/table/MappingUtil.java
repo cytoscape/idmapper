@@ -12,7 +12,16 @@ import org.cytoscape.model.CyTable;
 
 public final class MappingUtil {
 
-    public final static void addCleanedStrValueToList(final List<String> ids, final Object v) {
+    /**
+     * Adds Object v as trimmed String to List ids.
+     *
+     * @param ids
+     *            the list to add to
+     * @param v
+     *            the item to add
+     */
+    public final static void addCleanedStrValueToList(final List<String> ids,
+                                                      final Object v) {
         if ((ids != null) && (v != null)) {
             String v_str = (String) v;
             if (v_str != null) {
@@ -24,25 +33,44 @@ public final class MappingUtil {
         }
     }
 
+    /**
+     * This is to add mapping results to a table column.
+     *
+     *
+     * @param source_is_list
+     *            true if the the source column has list values
+     * @param res
+     *            the mapping result
+     * @param table
+     *            the table to use
+     * @param column
+     *            the column to add to
+     * @param new_column_name
+     *            the name for the new column
+     * @param force_single
+     *            to force to use only use one mapped id
+     * @return true if many to one mapping occurred
+     */
     public final static boolean fillNewColumn(final boolean source_is_list,
-                                              final Map<String, IdMapping> matched_ids,
+                                              final Map<String, IdMapping> res,
                                               final CyTable table,
                                               final CyColumn column,
                                               final String new_column_name,
-                                              final boolean single) {
+                                              final boolean force_single) {
         final List<CyRow> rows = table.getAllRows();
         boolean many_to_one = false;
         if (source_is_list) {
             for (final CyRow row : rows) {
-                final List in_vals = (List) row.get(column.getName(),
-                                                    column.getType());
+                @SuppressWarnings("unchecked")
+                final List<String> in_vals = (List<String>) row.get(column.getName(),
+                                                                    column.getType());
                 if (in_vals != null) {
                     final TreeSet<String> ts = new TreeSet<String>();
                     for (final Object iv : in_vals) {
                         final String in_val = (String) iv;
                         if ((in_val != null) && (in_val.length() > 0)) {
-                            if (matched_ids.containsKey(in_val)) {
-                                final Set<String> matched = matched_ids.get(in_val).getTargetIds();
+                            if (res.containsKey(in_val)) {
+                                final Set<String> matched = res.get(in_val).getTargetIds();
                                 if (!matched.isEmpty()) {
                                     for (final String m : matched) {
                                         if ((m != null) && (m.length() > 0)) {
@@ -60,7 +88,7 @@ public final class MappingUtil {
                     }
                     final List<String> l = new ArrayList<String>(ts);
                     if (!l.isEmpty()) {
-                        if (single) {
+                        if (force_single) {
                             row.set(new_column_name,
                                     l.get(0));
                         }
@@ -77,10 +105,10 @@ public final class MappingUtil {
                 final String in_val = (String) row.get(column.getName(),
                                                        column.getType());
                 if ((in_val != null) && (in_val.length() > 0)) {
-                    if (matched_ids.containsKey(in_val)) {
-                        final Set<String> matched = matched_ids.get(in_val).getTargetIds();
+                    if (res.containsKey(in_val)) {
+                        final Set<String> matched = res.get(in_val).getTargetIds();
                         if (!matched.isEmpty()) {
-                            if (single) {
+                            if (force_single) {
                                 row.set(new_column_name,
                                         matched.iterator().next());
                             }
@@ -108,26 +136,40 @@ public final class MappingUtil {
         return many_to_one;
     }
 
-    public final static boolean isAllSingle(final boolean source_is_list, final Map<String, IdMapping> matched_ids, final CyColumn column, final CyTable table) {
+    /**
+     * To determine if all mappings are one/many-to-one
+     *
+     * @param source_is_list
+     *            true if the the source column has list values
+     * @param res
+     *            the mapping result
+     * @param column
+     *            the column to add to
+     * @param table
+     *            the table to use
+     * @return true if all mappings are one/many-to-one
+     */
+    @SuppressWarnings("unchecked")
+    public final static boolean isAllSingle(final boolean source_is_list,
+                                            final Map<String, IdMapping> res,
+                                            final CyColumn column,
+                                            final CyTable table) {
         final List<CyRow> rows = table.getAllRows();
         final ArrayList<Set<String>> list = new ArrayList<Set<String>>();
         if (source_is_list) {
-
             for (final CyRow row : rows) {
-
-                final List in_vals = (List) row.get(column.getName(),
-                                                    column.getType());
+                final List<String> in_vals = (List<String>) row.get(column.getName(),
+                                                                    column.getType());
                 if (in_vals != null) {
                     final TreeSet<String> ts = new TreeSet<String>();
                     for (final Object iv : in_vals) {
                         final String in_val = (String) iv;
                         if ((in_val != null) && (in_val.length() > 0)) {
-                            if (matched_ids.containsKey(in_val)) {
-                                final IdMapping matched = matched_ids.get(in_val);
+                            if (res.containsKey(in_val)) {
+                                final IdMapping matched = res.get(in_val);
                                 if (!matched.getTargetIds().isEmpty()) {
                                     for (final String m : matched.getTargetIds()) {
                                         if ((m != null) && (m.length() > 0)) {
-
                                             ts.add(m);
 
                                         }
@@ -136,7 +178,6 @@ public final class MappingUtil {
                             }
                         }
                     }
-
                     list.add(ts);
                 }
             }
@@ -146,8 +187,8 @@ public final class MappingUtil {
                 final String in_val = (String) row.get(column.getName(),
                                                        column.getType());
                 if ((in_val != null) && (in_val.length() > 0)) {
-                    if (matched_ids.containsKey(in_val)) {
-                        final Set<String> matched = matched_ids.get(in_val).getTargetIds();
+                    if (res.containsKey(in_val)) {
+                        final Set<String> matched = res.get(in_val).getTargetIds();
                         if (!matched.isEmpty()) {
                             // if (single) {
                             // row.set(new_column_name, matched.iterator()
@@ -162,7 +203,7 @@ public final class MappingUtil {
 
                                 }
                             }
-                            final List<String> l = new ArrayList<String>(ts);
+                            // final List<String> l = new ArrayList<String>(ts);
                             list.add(ts);
                             // }
                         }
@@ -180,7 +221,25 @@ public final class MappingUtil {
         return all_single;
     }
 
-    public final static String validateNewColumnName(final String target, final String source, final String new_column_name, final CyColumn column) {
+    /**
+     * To make a new column name, ensuring that it does not match and existing
+     * name
+     *
+     *
+     * @param target
+     *            the target id type
+     * @param source
+     *            the source id type
+     * @param new_column_name
+     *            a suggested new name, can be null or empty
+     * @param column
+     *            the source column
+     * @return a new column name
+     */
+    public final static String makeNewColumnName(final String target,
+                                                 final String source,
+                                                 final String new_column_name,
+                                                 final CyColumn column) {
 
         final String my_target = target;
         final String my_source = source;
@@ -192,18 +251,36 @@ public final class MappingUtil {
             my_col_name = new_column_name.trim();
         }
         final CyTable table = column.getTable();
-        if (table.getColumn(new_column_name) != null) {
+        if (table.getColumn(my_col_name) != null) {
             int counter = 1;
-            String new_new_column_name = new_column_name + " (" + counter + ")";
+            String new_new_column_name = my_col_name + " (" + counter + ")";
             while (table.getColumn(new_new_column_name) != null) {
                 ++counter;
-                new_new_column_name = new_column_name + " (" + counter + ")";
+                new_new_column_name = my_col_name + " (" + counter + ")";
             }
             my_col_name = new_new_column_name;
         }
         return my_col_name;
     }
 
+    /**
+     * To create a simple message informing the user about the success of the
+     * mapping operation.
+     *
+     *
+     * @param new_column_name
+     * @param target
+     * @param source
+     * @param ids
+     * @param matched_ids
+     * @param all_unique
+     * @param non_unique
+     * @param unique
+     * @param min
+     * @param max
+     * @param many_to_one
+     * @return
+     */
     public final static String createMsg(final String new_column_name,
                                          final String target,
                                          final String source,
@@ -218,8 +295,8 @@ public final class MappingUtil {
         final String msg;
 
         if (matched_ids.size() < 1) {
-            msg = "Failed to map any identifier" + "\n" + "Total identifiers: " + ids.size() + "\n" + "Source type: "
-                    + source + "\n" + "Target type: " + target;
+            msg = "Failed to map any identifier" + "\n" + "Total identifiers: " + ids.size() + "\n" + "Source type: " + source + "\n" + "Target type: "
+                    + target;
         }
         else {
             final String o2o;
@@ -242,8 +319,7 @@ public final class MappingUtil {
             }
 
             msg = "Successfully mapped identifiers: " + matched_ids.size() + "\n" + "Total source identifiers: " + ids.size() + "\n" + o2o + m2o
-                    + "Source type: " + source + "\n" + "Target type: " + target + "\n"
-                    + "New column: " + new_column_name;
+                    + "Source type: " + source + "\n" + "Target type: " + target + "\n" + "New column: " + new_column_name;
         }
         return msg;
     }
