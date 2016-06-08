@@ -18,12 +18,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * An client for the Id Mapping service developed by UCSDs Keiichiro Ono. see
+ * https://github.com/cytoscape-ci/service-idmapping
+ *
+ *
+ * @author cmzmasek
+ *
+ */
 public class KOIdMapper implements IdMapper {
 
-    // https://github.com/cytoscape-ci/service-idmapping
     public static final String  DEFAULT_MAP_SERVICE_URL_STR = "http://ci-dev-serv.ucsd.edu:3000/map";
 
-    // Data sources:
+    // Sources and target types:
     public static final String  UniProtKB_AC                = "UniProtKB-AC";
     public static final String  UniProtKB_ID                = "UniProtKB-ID";
     public static final String  RefSeq                      = "RefSeq";
@@ -47,7 +54,7 @@ public class KOIdMapper implements IdMapper {
     public static final String  FLY                         = "fly";
     public static final String  YEAST                       = "yeast";
 
-    // Terms used in the json respone:
+    // Terms used in the Json respone:
     private static final String MATCHED                     = "matched";
     private static final String MATCHES                     = "matches";
     private static final String IN                          = "in";
@@ -156,7 +163,7 @@ public class KOIdMapper implements IdMapper {
      *            the target species (the same as the source species)
      * @param target_type
      *            the target type
-     * 
+     *
      * @return the result of the parsing as Map of String to IdMapping
      * @throws IOException
      * @throws JsonProcessingException
@@ -236,10 +243,12 @@ public class KOIdMapper implements IdMapper {
 
     /**
      * This posts a Json formatted query to a URL.
-     * 
-     * 
-     * @param url_str the URL to post to
-     * @param json_query the Json query
+     *
+     *
+     * @param url_str
+     *            the URL to post to
+     * @param json_query
+     *            the Json query
      * @return the response as String
      * @throws IOException
      */
@@ -282,6 +291,16 @@ public class KOIdMapper implements IdMapper {
         return sb.toString();
     }
 
+    /**
+     * Runs to query against a URL.
+     *
+     * @param ids
+     * @param target_type
+     * @param source_type
+     * @param url
+     * @return
+     * @throws IOException
+     */
     private final static String runQuery(final Collection<String> ids,
                                          final String target_type,
                                          final String source_type,
@@ -296,6 +315,15 @@ public class KOIdMapper implements IdMapper {
                     json_query);
     }
 
+    /**
+     * Helper method to add to the result map.
+     *
+     * @param res
+     * @param source_id
+     * @param target_id
+     * @param species
+     * @param target_type
+     */
     private final static void addMappedId(final Map<String, IdMapping> res,
                                           final String source_id,
                                           final String target_id,
@@ -315,6 +343,12 @@ public class KOIdMapper implements IdMapper {
         }
     }
 
+    /**
+     * This uses a collection of query ids to make a Json list.
+     *
+     * @param l
+     * @return
+     */
     private final static StringBuilder listToString(final Collection<String> l) {
         final StringBuilder sb = new StringBuilder();
         boolean first = true;
@@ -332,6 +366,15 @@ public class KOIdMapper implements IdMapper {
         return sb;
     }
 
+    /**
+     * This uses a collection of query ids and a target type to make a Json
+     * query string.
+     *
+     *
+     * @param ids
+     * @param target_type
+     * @return
+     */
     private static final String makeQuery(final Collection<String> ids,
                                           final String target_type) {
         final StringBuilder sb = new StringBuilder();
