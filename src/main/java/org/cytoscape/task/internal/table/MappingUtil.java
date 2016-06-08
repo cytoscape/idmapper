@@ -182,8 +182,8 @@ public final class MappingUtil {
 
     public final static String validateNewColumnName(final String target, final String source, final String new_column_name, final CyColumn column) {
 
-        final String my_target = BridgeDbIdMapper.SHORT_TO_LONG.get(target);
-        final String my_source = BridgeDbIdMapper.SHORT_TO_LONG.get(source);
+        final String my_target = target;
+        final String my_source = source;
         String my_col_name;
         if ((new_column_name == null) || (new_column_name.trim().length() < 1)) {
             my_col_name = column.getName() + ": " + my_source + "->" + my_target;
@@ -219,7 +219,7 @@ public final class MappingUtil {
 
         if (matched_ids.size() < 1) {
             msg = "Failed to map any identifier" + "\n" + "Total identifiers: " + ids.size() + "\n" + "Source type: "
-                    + BridgeDbIdMapper.SHORT_TO_LONG.get(source) + "\n" + "Target type: " + BridgeDbIdMapper.SHORT_TO_LONG.get(target);
+                    + source + "\n" + "Target type: " + target;
         }
         else {
             final String o2o;
@@ -242,7 +242,7 @@ public final class MappingUtil {
             }
 
             msg = "Successfully mapped identifiers: " + matched_ids.size() + "\n" + "Total source identifiers: " + ids.size() + "\n" + o2o + m2o
-                    + "Source type: " + BridgeDbIdMapper.SHORT_TO_LONG.get(source) + "\n" + "Target type: " + BridgeDbIdMapper.SHORT_TO_LONG.get(target) + "\n"
+                    + "Source type: " + source + "\n" + "Target type: " + target + "\n"
                     + "New column: " + new_column_name;
         }
         return msg;

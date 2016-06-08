@@ -100,9 +100,9 @@ public class MapColumnTaskKO extends AbstractTableColumnTask {
                 }
             }
         }
-        final SortedSet<String> in_types = new TreeSet<String>();
-        in_types.add(KOIdMapper.SYNONYMS);
-        in_types.add(source);
+      //  final SortedSet<String> in_types = new TreeSet<String>();
+       // in_types.add(KOIdMapper.SYNONYMS);
+       // in_types.add(source);
 
         final Set<String> matched_ids;
         final Set<String> unmatched_ids;

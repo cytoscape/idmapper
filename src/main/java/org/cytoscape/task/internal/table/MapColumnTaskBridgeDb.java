@@ -160,8 +160,8 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
         }
         System.out.println();
 
-        new_column_name = MappingUtil.validateNewColumnName(target,
-                                                            source,
+        new_column_name = MappingUtil.validateNewColumnName(BridgeDbIdMapper.SHORT_TO_LONG.get(target),
+                                                            BridgeDbIdMapper.SHORT_TO_LONG.get(source),
                                                             new_column_name,
                                                             column);
 
@@ -225,8 +225,8 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
         }
 
         final String msg = MappingUtil.createMsg(new_column_name,
-                                                 target,
-                                                 source,
+                                                 BridgeDbIdMapper.SHORT_TO_LONG.get(target),
+                                                 BridgeDbIdMapper.SHORT_TO_LONG.get(source),
                                                  ids,
                                                  matched_ids,
                                                  all_unique,

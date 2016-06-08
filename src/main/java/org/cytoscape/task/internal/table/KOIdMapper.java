@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -76,13 +77,53 @@ public class KOIdMapper implements IdMapper {
                                       final String target_type,
                                       final String source_species,
                                       final String target_species) {
-        // TODO Auto-generated method stub
+        
+        String json_str = null;
+        _matched_ids = new TreeSet<String>();
+        _unmatched_ids = new TreeSet<String>();
+        try {
+            json_str = runQuery(query_ids,
+                                target_type,
+                                source_type,
+                                 _url);
+        }
+        catch (final IOException e) {
+            e.printStackTrace();
+        }
+        if (json_str != null) {
+           
+                System.out.println(json_str);
+            
+           
+                try {
+                    final Map<String, IdMapping> map = new TreeMap<String, IdMapping>();
+                    final SortedSet<String> in_types = new TreeSet<String>();
+                    in_types.add(KOIdMapper.SYNONYMS);
+                    in_types.add(source_type);
+                    parseResponse(json_str,
+                                  in_types,
+                                  target_species,
+                                  target_type,
+                                  map,
+                                  _unmatched_ids);
+                    
+                    for (String id : map.keySet()) {
+                        _matched_ids.add(id);
+                    }
+                    
+                    return map;
+
+                }
+                catch (final IOException e) {
+                    e.printStackTrace();
+                }
+            
+        }
         return null;
     }
 
     @Override
     public Map<String, IdGuess> guess(final Collection<String> query_ids, final String source_species) {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -90,7 +131,7 @@ public class KOIdMapper implements IdMapper {
                                             final Set<String> in_types,
                                             final String target_species,
                                             final String target_type,
-                                            final Map<String, SortedSet<String>> matched_ids,
+                                            final Map<String, IdMapping> map,
                                             final Set<String> unmatched_ids) throws IOException, JsonProcessingException {
         if (MapColumnTaskKO.DEBUG) {
             System.out.println("str =" + json_str);
@@ -129,13 +170,13 @@ public class KOIdMapper implements IdMapper {
                                         final Iterator<JsonNode> it = target_ids.iterator();
                                         while (it.hasNext()) {
                                             final JsonNode target_id = it.next();
-                                            addMappedId(matched_ids,
+                                            addMappedId(map,
                                                         in,
                                                         target_id.asText());
                                         }
                                     }
                                     else {
-                                        addMappedId(matched_ids,
+                                        addMappedId(map,
                                                     in,
                                                     target_ids.asText());
                                     }
@@ -197,7 +238,10 @@ public class KOIdMapper implements IdMapper {
         return sb.toString();
     }
 
-    private final static String runQuery(final List<String> ids, final String target_type, final String source_type, final String url) throws IOException {
+    private final static String runQuery(final Collection<String> ids,
+                                         final String target_type,
+                                         final String source_type,
+                                         final String url) throws IOException {
         final String json_query = makeQuery(ids,
                                             target_type);
         System.out.println("url=" + url);
@@ -207,17 +251,17 @@ public class KOIdMapper implements IdMapper {
                     json_query);
     }
 
-    private final static void addMappedId(final Map<String, SortedSet<String>> matched_ids, final String in, final String id) {
+    private final static void addMappedId(final Map<String, IdMapping> map, final String in, final String id) {
         if ((id != null) && (id.length() > 0)) {
-            if (!matched_ids.containsKey(in)) {
-                matched_ids.put(in,
-                                new TreeSet<String>());
+            if (!map.containsKey(in)) {
+                map.put(in,
+                                new IdMappingImpl());
             }
-            matched_ids.get(in).add(id);
+            map.get(in).getTargetIds().add(id);
         }
     }
 
-    private final static StringBuilder listToString(final List<String> l) {
+    private final static StringBuilder listToString(final Collection<String> l) {
         final StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (final String s : l) {
@@ -234,7 +278,7 @@ public class KOIdMapper implements IdMapper {
         return sb;
     }
 
-    private static final String makeQuery(final List<String> ids, final String target_type) {
+    private static final String makeQuery(final Collection<String> ids, final String target_type) {
         final StringBuilder sb = new StringBuilder();
         sb.append("{\"ids\": [");
         sb.append(listToString(ids));
