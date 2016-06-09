@@ -19,8 +19,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * An client for the Id Mapping service developed by UCSDs Keiichiro Ono. see
- * https://github.com/cytoscape-ci/service-idmapping
+ * An client for the Id Mapping service developed by UCSD's Keiichiro Ono.
+ *
+ * See https://github.com/cytoscape-ci/service-idmapping
  *
  *
  * @author cmzmasek
@@ -77,6 +78,10 @@ public class KOIdMapper implements IdMapper {
         _url = url;
     }
 
+    public KOIdMapper() {
+        _url = DEFAULT_MAP_SERVICE_URL_STR;
+    }
+
     @Override
     public Set<String> getUnmatchedIds() {
         return _unmatched_ids;
@@ -118,7 +123,6 @@ public class KOIdMapper implements IdMapper {
                                                                  in_types,
                                                                  target_species,
                                                                  target_type);
-
                 for (final String id : res.keySet()) {
                     if (DEBUG) {
                         System.out.println(res.get(id));
@@ -156,7 +160,7 @@ public class KOIdMapper implements IdMapper {
      *
      *
      * @param json_str
-     *            to response to be parsed
+     *            the response to be parsed
      * @param source_types
      *            the source types
      * @param target_species
@@ -259,7 +263,7 @@ public class KOIdMapper implements IdMapper {
         conn.setDoOutput(true);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type",
-                                "application/json");
+                "application/json");
         if (DEBUG) {
             System.out.println(json_query);
         }

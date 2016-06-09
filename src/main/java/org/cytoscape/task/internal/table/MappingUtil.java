@@ -10,12 +10,10 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 
-
-
 /**
  * Utility methods for Id mapping clients.
- * 
- * 
+ *
+ *
  * @author cmzmasek
  *
  */
@@ -307,8 +305,14 @@ public final class MappingUtil {
                 o2o = "All mappings one-to-one" + "\n";
             }
             else {
-                o2o = "Not all mappings one-to-one:" + "\n" + "  one-to-one: " + unique + "\n" + "  one-to-many: " + non_unique + " (range: " + min + "-" + max
-                        + ")" + "\n";
+                if (min != max) {
+                    o2o = "Not all mappings one-to-one:" + "\n" + "  one-to-one: " + unique + "\n" + "  one-to-many: " + non_unique + " (range: 1-to-" + min
+                            + " ~ 1-to-" + max + ")" + "\n";
+                }
+                else {
+                    o2o = "Not all mappings one-to-one:" + "\n" + "  one-to-one: " + unique + "\n" + "  one-to-many: " + non_unique + " (1-to-" + min + ")"
+                            + "\n";
+                }
             }
 
             final String m2o;

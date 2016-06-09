@@ -2,6 +2,13 @@ package org.cytoscape.task.internal.table;
 
 import java.util.Set;
 
+/**
+ * Interface for an Id guessing service.
+ *
+ *
+ * @author cmzmasek
+ *
+ */
 public interface IdGuess {
 
     /**

@@ -18,6 +18,16 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.ListSingleSelection;
 
+/**
+ * A column task which uses the Id Mapping service developed by UCSD's Keiichiro
+ * Ono for mapping.
+ *
+ * See https://github.com/cytoscape-ci/service-idmapping
+ *
+ *
+ * @author cmzmasek
+ *
+ */
 public class MapColumnTaskKO extends AbstractTableColumnTask {
 
     public static final boolean DEBUG = true;
@@ -34,34 +44,34 @@ public class MapColumnTaskKO extends AbstractTableColumnTask {
 
     @Tunable(description = "Source (mapping from)")
     public ListSingleSelection<String> source_selection  = new ListSingleSelection<String>(KOIdMapper.SYMBOL,
-            KOIdMapper.GENE_ID,
-            KOIdMapper.ENSEMBL,
-            KOIdMapper.UniProtKB_AC,
-            KOIdMapper.UniProtKB_ID);
+                                                                                           KOIdMapper.GENE_ID,
+                                                                                           KOIdMapper.ENSEMBL,
+                                                                                           KOIdMapper.UniProtKB_AC,
+                                                                                           KOIdMapper.UniProtKB_ID);
 
     @Tunable(description = "Target (mapping to)")
     public ListSingleSelection<String> target_selection  = new ListSingleSelection<String>(KOIdMapper.SYMBOL,
-            KOIdMapper.GENE_ID,
-            KOIdMapper.ENSEMBL,
-            KOIdMapper.SYNONYMS,
-            KOIdMapper.UniProtKB_AC,
-            KOIdMapper.UniProtKB_ID,
-            KOIdMapper.RefSeq,
-            KOIdMapper.GI,
-            KOIdMapper.PDB,
-            KOIdMapper.GO,
-            KOIdMapper.UniRef100,
-            KOIdMapper.UniRef90,
-            KOIdMapper.UniRef50,
-            KOIdMapper.UniParc,
-            KOIdMapper.PIR,
-            KOIdMapper.EMBL);
+                                                                                           KOIdMapper.GENE_ID,
+                                                                                           KOIdMapper.ENSEMBL,
+                                                                                           KOIdMapper.SYNONYMS,
+                                                                                           KOIdMapper.UniProtKB_AC,
+                                                                                           KOIdMapper.UniProtKB_ID,
+                                                                                           KOIdMapper.RefSeq,
+                                                                                           KOIdMapper.GI,
+                                                                                           KOIdMapper.PDB,
+                                                                                           KOIdMapper.GO,
+                                                                                           KOIdMapper.UniRef100,
+                                                                                           KOIdMapper.UniRef90,
+                                                                                           KOIdMapper.UniRef50,
+                                                                                           KOIdMapper.UniParc,
+                                                                                           KOIdMapper.PIR,
+                                                                                           KOIdMapper.EMBL);
 
     @Tunable(description = "Species")
     public ListSingleSelection<String> species_selection = new ListSingleSelection<String>(KOIdMapper.HUMAN,
-            KOIdMapper.MOUSE,
-            KOIdMapper.FLY,
-            KOIdMapper.YEAST);
+                                                                                           KOIdMapper.MOUSE,
+                                                                                           KOIdMapper.FLY,
+                                                                                           KOIdMapper.YEAST);
 
     @Tunable(description = "New column name:")
     public String                      new_column_name;
@@ -69,6 +79,7 @@ public class MapColumnTaskKO extends AbstractTableColumnTask {
     @Tunable(description = "Force single ")
     public boolean                     only_use_one      = false;
 
+    @SuppressWarnings("rawtypes")
     @Override
     public void run(final TaskMonitor taskMonitor) {
         final String target = target_selection.getSelectedValue();
@@ -98,15 +109,12 @@ public class MapColumnTaskKO extends AbstractTableColumnTask {
                 }
             }
         }
-        // final SortedSet<String> in_types = new TreeSet<String>();
-        // in_types.add(KOIdMapper.SYNONYMS);
-        // in_types.add(source);
 
         final Set<String> matched_ids;
         final Set<String> unmatched_ids;
         final Map<String, IdMapping> res;
         try {
-            final KOIdMapper map = new KOIdMapper(KOIdMapper.DEFAULT_MAP_SERVICE_URL_STR);
+            final KOIdMapper map = new KOIdMapper();
 
             res = map.map(ids,
                           source,

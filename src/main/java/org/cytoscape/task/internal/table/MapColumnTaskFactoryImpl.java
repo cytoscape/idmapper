@@ -14,7 +14,7 @@ public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory imp
         KO, BRIDGE_DB;
     }
 
-    final private MAP_SERVICE ms = MAP_SERVICE.KO;
+    final private MAP_SERVICE ms = MAP_SERVICE.BRIDGE_DB;
 
     public MapColumnTaskFactoryImpl(final UndoSupport undoSupport,
                                     final TunableSetter tunableSetter) {

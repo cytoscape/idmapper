@@ -4,6 +4,13 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+/**
+ * A basic implementation of a IdMapping.
+ *
+ *
+ * @author cmzmasek
+ *
+ */
 public class IdMappingImpl implements IdMapping {
 
     private final SortedSet<String> source_ids;

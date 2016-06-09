@@ -18,6 +18,13 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.ListSingleSelection;
 
+/**
+ * A column task which uses the Id Mapping service BridgeDB for mapping.
+ *
+ *
+ * @author cmzmasek
+ *
+ */
 public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
 
     public static final boolean DEBUG = true;
@@ -34,49 +41,49 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
 
     @Tunable(description = "Source (mapping from)")
     public ListSingleSelection<String> source_selection  = new ListSingleSelection<String>(BridgeDbIdMapper.ENSEMBL,
-            BridgeDbIdMapper.EMBL,
-            BridgeDbIdMapper.Entrez_Gene,
-            BridgeDbIdMapper.Gene_ID,
-            BridgeDbIdMapper.GO,
-            BridgeDbIdMapper.GenBank,
-            BridgeDbIdMapper.Illumina,
-            BridgeDbIdMapper.InterPro,
-            BridgeDbIdMapper.MGI,
-            BridgeDbIdMapper.PDB,
-            BridgeDbIdMapper.RefSeq,
-            BridgeDbIdMapper.UniGene,
-            BridgeDbIdMapper.UNIPROT,
-            BridgeDbIdMapper.UCSC_Genome_Browser);
+                                                                                           BridgeDbIdMapper.EMBL,
+                                                                                           BridgeDbIdMapper.Entrez_Gene,
+                                                                                           BridgeDbIdMapper.Gene_ID,
+                                                                                           BridgeDbIdMapper.GO,
+                                                                                           BridgeDbIdMapper.GenBank,
+                                                                                           BridgeDbIdMapper.Illumina,
+                                                                                           BridgeDbIdMapper.InterPro,
+                                                                                           BridgeDbIdMapper.MGI,
+                                                                                           BridgeDbIdMapper.PDB,
+                                                                                           BridgeDbIdMapper.RefSeq,
+                                                                                           BridgeDbIdMapper.UniGene,
+                                                                                           BridgeDbIdMapper.UNIPROT,
+                                                                                           BridgeDbIdMapper.UCSC_Genome_Browser);
 
     @Tunable(description = "Target (mapping to)")
     public ListSingleSelection<String> target_selection  = new ListSingleSelection<String>(BridgeDbIdMapper.ENSEMBL,
-            BridgeDbIdMapper.EMBL,
-            BridgeDbIdMapper.Entrez_Gene,
-            BridgeDbIdMapper.Gene_ID,
-            BridgeDbIdMapper.GO,
-            BridgeDbIdMapper.GenBank,
-            BridgeDbIdMapper.Illumina,
-            BridgeDbIdMapper.InterPro,
-            BridgeDbIdMapper.MGI,
-            BridgeDbIdMapper.PDB,
-            BridgeDbIdMapper.RefSeq,
-            BridgeDbIdMapper.UniGene,
-            BridgeDbIdMapper.UNIPROT,
-            BridgeDbIdMapper.UCSC_Genome_Browser);
+                                                                                           BridgeDbIdMapper.EMBL,
+                                                                                           BridgeDbIdMapper.Entrez_Gene,
+                                                                                           BridgeDbIdMapper.Gene_ID,
+                                                                                           BridgeDbIdMapper.GO,
+                                                                                           BridgeDbIdMapper.GenBank,
+                                                                                           BridgeDbIdMapper.Illumina,
+                                                                                           BridgeDbIdMapper.InterPro,
+                                                                                           BridgeDbIdMapper.MGI,
+                                                                                           BridgeDbIdMapper.PDB,
+                                                                                           BridgeDbIdMapper.RefSeq,
+                                                                                           BridgeDbIdMapper.UniGene,
+                                                                                           BridgeDbIdMapper.UNIPROT,
+                                                                                           BridgeDbIdMapper.UCSC_Genome_Browser);
 
     @Tunable(description = "Species")
     public ListSingleSelection<String> species_selection = new ListSingleSelection<String>(BridgeDbIdMapper.Human,
-            BridgeDbIdMapper.Mouse,
-            BridgeDbIdMapper.Rat,
-            BridgeDbIdMapper.Frog,
-            BridgeDbIdMapper.Zebra_fish,
-            BridgeDbIdMapper.Fruit_fly,
-            BridgeDbIdMapper.Mosquito,
-            BridgeDbIdMapper.Worm,
-            BridgeDbIdMapper.Arabidopsis_thaliana,
-            BridgeDbIdMapper.Yeast,
-            BridgeDbIdMapper.Escherichia_coli,
-            BridgeDbIdMapper.Tuberculosis);
+                                                                                           BridgeDbIdMapper.Mouse,
+                                                                                           BridgeDbIdMapper.Rat,
+                                                                                           BridgeDbIdMapper.Frog,
+                                                                                           BridgeDbIdMapper.Zebra_fish,
+                                                                                           BridgeDbIdMapper.Fruit_fly,
+                                                                                           BridgeDbIdMapper.Mosquito,
+                                                                                           BridgeDbIdMapper.Worm,
+                                                                                           BridgeDbIdMapper.Arabidopsis_thaliana,
+                                                                                           BridgeDbIdMapper.Yeast,
+                                                                                           BridgeDbIdMapper.Escherichia_coli,
+                                                                                           BridgeDbIdMapper.Tuberculosis);
 
     @Tunable(description = "New column name:")
     public String                      new_column_name;
@@ -84,6 +91,7 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
     @Tunable(description = "Force single ")
     public boolean                     only_use_one      = false;
 
+    @SuppressWarnings("rawtypes")
     @Override
     public void run(final TaskMonitor taskMonitor) {
         final String target = BridgeDbIdMapper.LONG_TO_SHORT.get(target_selection.getSelectedValue());
@@ -118,7 +126,7 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
         final Set<String> unmatched_ids;
         final Map<String, IdMapping> res;
         try {
-            final BridgeDbIdMapper map = new BridgeDbIdMapper(BridgeDbIdMapper.DEFAULT_MAP_SERVICE_URL_STR);
+            final BridgeDbIdMapper map = new BridgeDbIdMapper();
 
             res = map.map(ids,
                           source,
