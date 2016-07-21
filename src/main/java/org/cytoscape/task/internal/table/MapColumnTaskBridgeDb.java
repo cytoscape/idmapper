@@ -68,7 +68,7 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
                                                                                            BridgeDbIdMapper.UNIPROT,
                                                                                            BridgeDbIdMapper.UCSC_Genome_Browser);
 
-    @Tunable(description = "To: ")
+    @Tunable(description = "To:")
     public ListSingleSelection<String> target_selection  = new ListSingleSelection<String>(BridgeDbIdMapper.ENSEMBL,
                                                                                            BridgeDbIdMapper.EMBL,
                                                                                            BridgeDbIdMapper.Entrez_Gene,
@@ -87,7 +87,7 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
     @Tunable(description = "New column name:")
     public String                      new_column_name = "Mapped ID" ;
 
-    @Tunable(description = "Force single ", )
+    @Tunable(description = "Force single " )
     public boolean                     only_use_one      = true;
 
     @SuppressWarnings("rawtypes")
@@ -166,6 +166,7 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
         int min = Integer.MAX_VALUE;
         int max = 0;
 
+if (res != null)
         for (final Entry<String, IdMapping> entry : res.entrySet()) {
             final Set<String> v = entry.getValue().getTargetIds();
             if (v != null) {

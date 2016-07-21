@@ -297,6 +297,8 @@ public class BridgeDbIdMapper implements IdMapper {
                                            final String query) throws IOException {
         final URL url = new URL(url_str + "/" + species + "/" + target + "/" + database);
 
+System.out.println("POSTING:  " + url.toString());
+System.out.println("Query:  " + query);
         final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestMethod("POST");
