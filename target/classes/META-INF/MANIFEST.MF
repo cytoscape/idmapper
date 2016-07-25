@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1469134469706
+Bnd-LastModified: 1469472836629
 Build-Jdk: 1.8.0_92
 Built-By: adamtreister
 Bundle-Activator: org.cytoscape.task.internal.CyActivator

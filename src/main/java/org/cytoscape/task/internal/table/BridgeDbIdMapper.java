@@ -30,7 +30,7 @@ import java.util.TreeSet;
  */
 public class BridgeDbIdMapper implements IdMapper {
 
-    public static final String              DEFAULT_MAP_SERVICE_URL_STR = "http://webservice.bridgedb.org/batch";
+    public static final String              DEFAULT_MAP_SERVICE_URL_STR = "http://webservice.bridgedb.org:8185";
 
     // Sources and target types:
     public static final String              ENSEMBL                     = "Ensembl";
@@ -42,7 +42,8 @@ public class BridgeDbIdMapper implements IdMapper {
     public static final String              Entrez_Gene                 = "Entrez Gene";
     public static final String              GenBank                     = "GenBank";
     public static final String              Illumina                    = "Illumina";
-    public static final String              InterPro                    = "Uniprot-TrEMBL";
+    public static final String              Uniprot_TrEMBL              = "Uniprot-TrEMBL";
+    public static final String              InterPro              		= "InterPro";
     public static final String              UniGene                     = "UniGene";
     public static final String              UCSC_Genome_Browser         = "UCSC Genome Browser";
     public static final String              RefSeq                      = "RefSeq";
@@ -50,69 +51,41 @@ public class BridgeDbIdMapper implements IdMapper {
 
     // To go between full and short names for types:
     public static final Map<String, String> LONG_TO_SHORT               = new HashMap<String, String>();
-    static {
-        LONG_TO_SHORT.put(ENSEMBL,
-                "En");
-        LONG_TO_SHORT.put(GO,
-                "T");
-        LONG_TO_SHORT.put(UNIPROT,
-                "S");
-        LONG_TO_SHORT.put(MGI,
-                "M");
-        LONG_TO_SHORT.put(Gene_ID,
-                "Wg");
-        LONG_TO_SHORT.put(EMBL,
-                "Em");
-        LONG_TO_SHORT.put(Entrez_Gene,
-                "L");
-        LONG_TO_SHORT.put(GenBank,
-                "G");
-        LONG_TO_SHORT.put(Illumina,
-                "Il");
-        LONG_TO_SHORT.put(InterPro,
-                "I");
-        LONG_TO_SHORT.put(UniGene,
-                "U");
-        LONG_TO_SHORT.put(UCSC_Genome_Browser,
-                "Uc");
-        LONG_TO_SHORT.put(RefSeq,
-                "Q");
-        LONG_TO_SHORT.put(PDB,
-                "Pd");
-    }
+	static {
+		LONG_TO_SHORT.put(ENSEMBL, "En");
+		LONG_TO_SHORT.put(GO, "T");
+		LONG_TO_SHORT.put(Uniprot_TrEMBL, "S");
+		LONG_TO_SHORT.put(MGI, "M");
+		LONG_TO_SHORT.put(Gene_ID, "Wg");
+		LONG_TO_SHORT.put(EMBL, "Em");
+		LONG_TO_SHORT.put(Entrez_Gene, "L");
+		LONG_TO_SHORT.put(GenBank, "G");
+		LONG_TO_SHORT.put(Illumina, "Il");
+		LONG_TO_SHORT.put(InterPro, "I");
+		LONG_TO_SHORT.put(UniGene, "U");
+		LONG_TO_SHORT.put(UCSC_Genome_Browser, "Uc");
+		LONG_TO_SHORT.put(RefSeq, "Q");
+		LONG_TO_SHORT.put(PDB, "Pd");
+	}
 
     // To go between full and short names for types:
     public static final Map<String, String> SHORT_TO_LONG               = new HashMap<String, String>();
     static {
-        SHORT_TO_LONG.put("En",
-                          ENSEMBL);
-        SHORT_TO_LONG.put("T",
-                          GO);
-        SHORT_TO_LONG.put("S",
-                          UNIPROT);
-        SHORT_TO_LONG.put("M",
-                          MGI);
-        SHORT_TO_LONG.put("Wg",
-                          Gene_ID);
-        SHORT_TO_LONG.put("Em",
-                          EMBL);
-        SHORT_TO_LONG.put("L",
-                          Entrez_Gene);
-        SHORT_TO_LONG.put("G",
-                          GenBank);
-        SHORT_TO_LONG.put("Il",
-                          Illumina);
-        SHORT_TO_LONG.put("I",
-                          InterPro);
-        SHORT_TO_LONG.put("U",
-                          UniGene);
-        SHORT_TO_LONG.put("Uc",
-                          UCSC_Genome_Browser);
-        SHORT_TO_LONG.put("Q",
-                          RefSeq);
-        SHORT_TO_LONG.put("Pd",
-                          PDB);
-    }
+		SHORT_TO_LONG.put("En", ENSEMBL);
+		SHORT_TO_LONG.put("T", GO);
+		SHORT_TO_LONG.put("S", Uniprot_TrEMBL);
+		SHORT_TO_LONG.put("M", MGI);
+		SHORT_TO_LONG.put("Wg", Gene_ID);
+		SHORT_TO_LONG.put("Em", EMBL);
+		SHORT_TO_LONG.put("L", Entrez_Gene);
+		SHORT_TO_LONG.put("G", GenBank);
+		SHORT_TO_LONG.put("Il", Illumina);
+		SHORT_TO_LONG.put("I", InterPro);
+		SHORT_TO_LONG.put("U", UniGene);
+		SHORT_TO_LONG.put("Uc", UCSC_Genome_Browser);
+		SHORT_TO_LONG.put("Q", RefSeq);
+		SHORT_TO_LONG.put("Pd", PDB);
+	}
 
     // Select species:
     public static final String              Human                       = "Human";
@@ -174,7 +147,7 @@ public class BridgeDbIdMapper implements IdMapper {
         try {
             res_list = BridgeDbIdMapper.runQuery(query_ids,
                                                  target_species,
-                                                 "xrefs",
+                                                 "xrefsBatch",
                                                  source_type,
                                                  _url);
         }
@@ -298,7 +271,7 @@ public class BridgeDbIdMapper implements IdMapper {
         final URL url = new URL(url_str + "/" + species + "/" + target + "/" + database);
 
 System.out.println("POSTING:  " + url.toString());
-System.out.println("Query:  " + query);
+System.out.println(query + "\n\n\n");
         final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestMethod("POST");

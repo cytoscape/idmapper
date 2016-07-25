@@ -66,6 +66,7 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
                                                                                            BridgeDbIdMapper.RefSeq,
                                                                                            BridgeDbIdMapper.UniGene,
                                                                                            BridgeDbIdMapper.UNIPROT,
+                                                                                           BridgeDbIdMapper.Uniprot_TrEMBL,
                                                                                            BridgeDbIdMapper.UCSC_Genome_Browser);
 
     @Tunable(description = "To:")
@@ -82,6 +83,7 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
                                                                                            BridgeDbIdMapper.RefSeq,
                                                                                            BridgeDbIdMapper.UniGene,
                                                                                            BridgeDbIdMapper.UNIPROT,
+                                                                                           BridgeDbIdMapper.Uniprot_TrEMBL,
                                                                                            BridgeDbIdMapper.UCSC_Genome_Browser);
 
     @Tunable(description = "New column name:")
@@ -95,6 +97,7 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
     public void run(final TaskMonitor taskMonitor) {
         final String target = BridgeDbIdMapper.LONG_TO_SHORT.get(target_selection.getSelectedValue());
         final String source = BridgeDbIdMapper.LONG_TO_SHORT.get(source_selection.getSelectedValue());
+        species_selection = new ListSingleSelection<String>(BridgeDbIdMapper.Human,    BridgeDbIdMapper.Mouse ); // HACK
         final String species = species_selection.getSelectedValue();
 
         boolean source_is_list = false;
