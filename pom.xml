@@ -15,7 +15,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>idmap-impl</artifactId>
 
-	<name>Cytoscape Idmap Impl (${project.artifactId})</name>
+	<name>IDMAP 0.9.0</name>
 
 	<packaging>bundle</packaging>
 
@@ -57,7 +57,7 @@
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
-						<Bundle-Version>${project.version}</Bundle-Version>
+						<Bundle-Version>${bundle.version}</Bundle-Version>
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
@@ -111,4 +111,5 @@
 		
 	</dependencies>
 
+	<version>0.9.0</version>
 </project>

@@ -1,12 +1,12 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1469472836629
+Bnd-LastModified: 1469571258674
 Build-Jdk: 1.8.0_92
 Built-By: adamtreister
 Bundle-Activator: org.cytoscape.task.internal.CyActivator
 Bundle-ManifestVersion: 2
-Bundle-Name: Cytoscape Idmap Impl (idmap-impl)
+Bundle-Name: IDMAP 0.9.0
 Bundle-SymbolicName: org.cytoscape.idmap-impl
-Bundle-Version: 3.5.0.SNAPSHOT
+Bundle-Version: 0
 Created-By: Apache Maven Bundle Plugin
 Import-Package: com.fasterxml.jackson.core;version="[2.2,3)",com.fasterx
  ml.jackson.databind;version="[2.2,3)",javax.swing,org.cytoscape.model;v

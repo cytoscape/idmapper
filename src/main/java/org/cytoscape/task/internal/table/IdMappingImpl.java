@@ -109,12 +109,8 @@ public class IdMappingImpl implements IdMapping {
         final StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (final String str : set) {
-            if (first) {
-                first = false;
-            }
-            else {
-                sb.append(", ");
-            }
+            if (first)          first = false;
+            else                sb.append(", ");
             sb.append(str);
         }
         return sb;

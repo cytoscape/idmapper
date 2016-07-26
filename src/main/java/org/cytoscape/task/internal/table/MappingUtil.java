@@ -91,20 +91,17 @@ public final class MappingUtil {
                                     }
                                 }
                             }
-                        }
-                    }
-                    final List<String> l = new ArrayList<String>(ts);
-                    if (!l.isEmpty()) {
-                        if (force_single) {
-                            row.set(new_column_name,
-                                    l.get(0));
-                        }
-                        else {
-                            row.set(new_column_name,
-                                    l);
-                        }
-                    }
-                }
+						}
+					}
+					final List<String> l = new ArrayList<String>(ts);
+					if (!l.isEmpty()) {
+						if (force_single) {
+							row.set(new_column_name, l.get(0));
+						} else {
+							row.set(new_column_name, l);
+						}
+					}
+				}
             }
         }
         else {
@@ -293,40 +290,22 @@ public final class MappingUtil {
                                          final int max,
                                          final boolean many_to_one) {
         final String msg;
+        String srcTarget = "Mapped: " + source + " -> " + target + "\n" ;
+        if (matched_ids.size() < 1) 
+        	return "Failed to map any of " +ids.size() + " identifiers.\n" + srcTarget;
+		
+        String o2o;
+		if (all_unique)
+			o2o = "All mappings one-to-one." + "\n";
+		else {
+			o2o = "Not all mappings one-to-one:" + "\n" + "  one-to-one: " + unique + "\n" + "  one-to-many: " + non_unique;
+			o2o += (min != max) ? " (range: 1-to-" + min + " ~ 1-to-" + max + ")\n" : " (1-to-" + min + ")\n";
+		}
 
-        if (matched_ids.size() < 1) {
-            msg = "Failed to map any identifier" + "\n" + "Total identifiers: " + ids.size() + "\n" + "Source type: " + source + "\n" + "Target type: "
-                    + target;
-        }
-        else {
-            final String o2o;
+		final String m2o = (many_to_one) ? "Same/all mappings many-to-one\n" : "";
 
-            if (all_unique) {
-                o2o = "All mappings one-to-one" + "\n";
-            }
-            else {
-                if (min != max) {
-                    o2o = "Not all mappings one-to-one:" + "\n" + "  one-to-one: " + unique + "\n" + "  one-to-many: " + non_unique + " (range: 1-to-" + min
-                            + " ~ 1-to-" + max + ")" + "\n";
-                }
-                else {
-                    o2o = "Not all mappings one-to-one:" + "\n" + "  one-to-one: " + unique + "\n" + "  one-to-many: " + non_unique + " (1-to-" + min + ")"
-                            + "\n";
-                }
-            }
-
-            final String m2o;
-            if (many_to_one) {
-                m2o = "Same/all mappings many-to-one" + "\n";
-            }
-            else {
-                m2o = "";
-
-            }
-
-            msg = "Successfully mapped identifiers: " + matched_ids.size() + "\n" + "Total source identifiers: " + ids.size() + "\n" + o2o + m2o
-                    + "Source type: " + source + "\n" + "Target type: " + target + "\n" + "New column: " + new_column_name;
-        }
+		msg = srcTarget + "Successfully mapped " + matched_ids.size() +  " of " + ids.size() + " identifiers.\n" 
+				+ o2o + m2o + "New column: " + new_column_name;
         return msg;
     }
 
