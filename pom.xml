@@ -15,7 +15,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>idmap-impl</artifactId>
 
-	<name>IDMAP 0.9.0</name>
+	<name>IDMAPPING</name>
 
 	<packaging>bundle</packaging>
 

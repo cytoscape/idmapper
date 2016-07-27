@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.table;
+package org.cytoscape.idmap;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal;
+package org.cytoscape.idmap;
 
 /*
  * %%
@@ -29,8 +29,6 @@ import java.util.Properties;
 
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.TableColumnTaskFactory;
-import org.cytoscape.task.internal.table.MapColumnTaskFactory;
-import org.cytoscape.task.internal.table.MapColumnTaskFactoryImpl;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;

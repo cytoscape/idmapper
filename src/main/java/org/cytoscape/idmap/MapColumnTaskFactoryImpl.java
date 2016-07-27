@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.table;
+package org.cytoscape.idmap;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.AbstractTableColumnTaskFactory;
