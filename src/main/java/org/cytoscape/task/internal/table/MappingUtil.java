@@ -219,7 +219,7 @@ public final class MappingUtil {
     }
 
     /**
-     * To make a new column name, ensuring that it does not match and existing
+     * To make a new column name, ensuring that it does not match an existing
      * name
      *
      *
