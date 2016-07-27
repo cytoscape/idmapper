@@ -9,13 +9,13 @@
 
 	<properties>
 		<bundle.symbolicName>org.cytoscape.idmap-impl</bundle.symbolicName>
-		<bundle.namespace>org.cytoscape.task.internal</bundle.namespace>
+		<bundle.namespace>org.cytoscape.idmap</bundle.namespace>
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>idmap-impl</artifactId>
 
-	<name>IDMAPPING</name>
+	<name>IDMAPPER</name>
 
 	<packaging>bundle</packaging>
 
