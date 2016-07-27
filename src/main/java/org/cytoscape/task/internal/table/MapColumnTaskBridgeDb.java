@@ -173,13 +173,13 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
 		if (matched_ids.size() > 0) {
 			boolean all_single = false;
 			if (only_use_one) {
-				table.createColumn(index, new_column_name, String.class, false);
+				table.createColumn(new_column_name, String.class, false);
 			} else {
 				all_single = MappingUtil.isAllSingle(source_is_list, res, column, table);
 				if (all_single) {
-					table.createColumn(index, new_column_name, String.class, false);
+					table.createColumn(new_column_name, String.class, false);
 				} else {
-					table.createListColumn(index, new_column_name, String.class, false);
+					table.createListColumn(new_column_name, String.class, false);
 				}
 			}
 			many_to_one = MappingUtil.fillNewColumn(source_is_list, res, table, column, new_column_name,
