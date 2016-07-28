@@ -7,8 +7,4 @@ A dialog is shown to gather the information about the species, and which columns
 
 Once the dialog is confirmed, a new column will be added to the Node Table containing the mapped identifiers.
 
-The active service  (either Kei's mapping service or BridgeDb) is set in MapColumnTaskFactoryImpl. Line 17
-
-__**BridgeDB** is the default service.__ and is expected to be the exclusive service in the core app.
-
 Note that we are pointed at __/webservice.bridgedb.org:8185__ in BridgeDbIdMapper:33.  This is a test server.
