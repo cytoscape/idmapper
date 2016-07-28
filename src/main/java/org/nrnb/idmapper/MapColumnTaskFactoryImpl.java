@@ -1,4 +1,4 @@
-package org.cytoscape.idmap;
+package org.nrnb.idmapper;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.AbstractTableColumnTaskFactory;
@@ -10,12 +10,6 @@ public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory imp
 
 	private final UndoSupport undoSupport;
 
-	public static enum MAP_SERVICE {
-		KO, BRIDGE_DB;
-	}
-
-	final private MAP_SERVICE ms = MAP_SERVICE.BRIDGE_DB;
-
 	public MapColumnTaskFactoryImpl(final UndoSupport undoSupport, final TunableSetter tunableSetter) {
 		this.undoSupport = undoSupport;
 	}
@@ -26,12 +20,7 @@ public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory imp
 		if (column == null)
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
 
-		switch (ms) {
-		case BRIDGE_DB:
-			return new TaskIterator(new MapColumnTaskBridgeDb(undoSupport, column));
-		default:
-			return new TaskIterator(new MapColumnTaskKO(undoSupport, column));
-		}
+		return new TaskIterator(new MapColumnTaskBridgeDb(undoSupport, column));
 	}
 
 	@Override

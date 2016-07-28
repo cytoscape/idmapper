@@ -1,4 +1,4 @@
-package org.cytoscape.idmap;
+package org.nrnb.idmapper;
 
 import java.util.Collection;
 import java.util.Map;

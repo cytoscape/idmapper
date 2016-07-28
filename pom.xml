@@ -4,18 +4,19 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.5.0-SNAPSHOT</version>
+		<version>3.4.0</version>
 	</parent>
 
 	<properties>
-		<bundle.symbolicName>org.cytoscape.idmap-impl</bundle.symbolicName>
-		<bundle.namespace>org.cytoscape.idmap</bundle.namespace>
+		<bundle.symbolicName>org.nrnb.idmapper</bundle.symbolicName>
+		<bundle.namespace>org.nrnb.idmapper</bundle.namespace>
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>idmap-impl</artifactId>
 
-	<name>IDMAPPER</name>
+	<name>ID Mapper</name>
+	<artifactId>idmapper</artifactId>
+	<version>0.9.1</version>
 
 	<packaging>bundle</packaging>
 
@@ -111,5 +112,4 @@
 		
 	</dependencies>
 
-	<version>0.9.0</version>
 </project>

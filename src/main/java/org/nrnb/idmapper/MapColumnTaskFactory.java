@@ -1,4 +1,4 @@
-package org.cytoscape.idmap;
+package org.nrnb.idmapper;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.TableColumnTaskFactory;
