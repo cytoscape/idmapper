@@ -20,7 +20,7 @@ public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory imp
 		if (column == null)
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
 
-		return new TaskIterator(new MapColumnTaskBridgeDb(undoSupport, column));
+		return new TaskIterator(new MapColumnTask(undoSupport, column));
 	}
 
 	@Override

@@ -14,12 +14,12 @@ import java.util.TreeSet;
 public class IdMappingImpl implements IdMapping {
 
     private final SortedSet<String> source_ids;
-    private String                  source_type;
+    private MappingSource           source_type;
     private String                  source_species;
     private final SortedSet<String> target_ids;
-    private String                  target_type;
-    private String                  target_species;
-    private String                  relationship_type;
+    private MappingSource           target_type;
+//    private String                  target_species;
+//    private String                  relationship_type;
 
     public IdMappingImpl() {
         source_ids = new TreeSet<String>();
@@ -45,11 +45,11 @@ public class IdMappingImpl implements IdMapping {
     }
 
     @Override
-    public String getSourceType() {
+    public MappingSource getSourceType() {
         return source_type;
     }
 
-    public void setSourceType(final String source_type) {
+    public void setSourceType(final MappingSource source_type) {
         this.source_type = source_type;
     }
 
@@ -63,45 +63,45 @@ public class IdMappingImpl implements IdMapping {
     }
 
     @Override
-    public String getTargetType() {
+    public MappingSource getTargetType() {
         return target_type;
     }
 
-    public void setTargetType(final String target_type) {
+    public void setTargetType(final MappingSource target_type) {
         this.target_type = target_type;
     }
 
-    @Override
-    public String getTargetSpecies() {
-        return target_species;
-    }
-
-    public void setTargetSpecies(final String target_species) {
-        this.target_species = target_species;
-    }
-
-    @Override
-    public String getRelationshipType() {
-        return relationship_type;
-    }
-
-    public void setRelationshipType(final String relationship_type) {
-        this.relationship_type = relationship_type;
-    }
+//    @Override
+//    public String getTargetSpecies() {
+//        return target_species;
+//    }
+//
+//    public void setTargetSpecies(final String target_species) {
+//        this.target_species = target_species;
+//    }
+//
+//    @Override
+//    public String getRelationshipType() {
+//        return relationship_type;
+//    }
+//
+//    public void setRelationshipType(final String relationship_type) {
+//        this.relationship_type = relationship_type;
+//    }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("source ids    : " + setToSB(getSourceIds()) + "\n");
         sb.append("target ids    : " + setToSB(getTargetIds()) + "\n");
-        sb.append("source id type: " + getSourceType() + "\n");
-        sb.append("target id type: " + getTargetType() + "\n");
-        sb.append("source species: " + getSourceSpecies() + "\n");
-        sb.append("target species: " + getTargetSpecies());
-        if (getRelationshipType() != null) {
-            sb.append("\n");
-            sb.append("type          : " + getRelationshipType() + "\n");
-        }
+//        sb.append("source id type: " + getSourceType() + "\n");
+//        sb.append("target id type: " + getTargetType() + "\n");
+//        sb.append("source species: " + getSourceSpecies() + "\n");
+//        sb.append("target species: " + getTargetSpecies());
+//        if (getRelationshipType() != null) {
+//            sb.append("\n");
+//            sb.append("type          : " + getRelationshipType() + "\n");
+//        }
         return sb.toString();
     }
 

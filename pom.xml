@@ -16,7 +16,7 @@
 
 	<name>ID Mapper</name>
 	<artifactId>idmapper</artifactId>
-	<version>0.9.1</version>
+	<version>0.9.2</version>
 
 	<packaging>bundle</packaging>
 

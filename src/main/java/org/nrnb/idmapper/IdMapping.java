@@ -32,7 +32,7 @@ public interface IdMapping {
      *
      * @return the source type
      */
-    public String getSourceType();
+    public MappingSource getSourceType();
 
     /**
      * This returns the species of the source ids (e.g. "Homo sapiens") of this
@@ -49,7 +49,7 @@ public interface IdMapping {
      *
      * @return the target type
      */
-    public String getTargetType();
+    public MappingSource getTargetType();
 
     /**
      * This returns the species of the target ids (e.g. "Homo sapiens") of this
@@ -58,7 +58,7 @@ public interface IdMapping {
      *
      * @return the target species.
      */
-    public String getTargetSpecies();
+//    public String getTargetSpecies();
 
     /**
      * This returns the type of relationship between source and target ids (e.g.
@@ -66,6 +66,6 @@ public interface IdMapping {
      *
      * @return the relationship type
      */
-    public String getRelationshipType();
+//    public String getRelationshipType();
 
 }

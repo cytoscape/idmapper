@@ -20,24 +20,35 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.ListSingleSelection;
 
 /**
- * A column task which uses the Id Mapping service BridgeDB for mapping.
+ * A column task which uses the Id Mapping service BridgeDB .
  *
  *
  * @author cmzmasek AST - tunables reordered, prompts changed
  *
- *         List of source databases can be found here:
+ *         Full list of source databases can be found here:
  * 
  *         //https://github.com/bridgedb/BridgeDb/blob/master/org.bridgedb.bio/
  *         resources/org/bridgedb/bio/datasources.txt
+ *         
+ *         common sources are enumerated in MappingSource.java
  *
  */
-public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
+public class MapColumnTask extends AbstractTableColumnTask {
 
-	public static final boolean DEBUG = true;
-	public static final boolean VERBOSE = true;
+//	public static final boolean DEBUG = true;
+	public static final boolean VERBOSE = false;
+	private static Species saveSpecies = Species.Mouse;
+	private static MappingSource saveTarget = MappingSource.ENSEMBL;
 
-	MapColumnTaskBridgeDb(final UndoSupport undoSupport, final CyColumn column) {
+	MapColumnTask(final UndoSupport undoSupport, final CyColumn column) {
 		super(column);
+		// get species from property
+		Species.buildMaps();
+		species_selection.setSelectedValue(saveSpecies.name());
+		final List<String> names = column.getValues(String.class);
+		MappingSource src = MappingSource.guessSource(names);
+		source_selection.setSelectedValue(src.descriptor());
+		target_selection.setSelectedValue(saveTarget.descriptor());
 	}
 
 	@ProvidesTitle
@@ -46,25 +57,14 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
 	}
 
 	@Tunable(description = "Species")
-	public ListSingleSelection<String> species_selection = new ListSingleSelection<String>(BridgeDbIdMapper.Human,
-			BridgeDbIdMapper.Mouse, BridgeDbIdMapper.Rat, BridgeDbIdMapper.Frog, BridgeDbIdMapper.Zebra_fish,
-			BridgeDbIdMapper.Fruit_fly, BridgeDbIdMapper.Mosquito, BridgeDbIdMapper.Worm,
-			BridgeDbIdMapper.Arabidopsis_thaliana, BridgeDbIdMapper.Yeast, BridgeDbIdMapper.Escherichia_coli,
-			BridgeDbIdMapper.Tuberculosis);
+	public ListSingleSelection<String> species_selection = new ListSingleSelection<String>(Species.fullNames());
 
+	// AbstractCyNetworkReader:98
 	@Tunable(description = "Map from")
-	public ListSingleSelection<String> source_selection = new ListSingleSelection<String>(BridgeDbIdMapper.ENSEMBL,
-			BridgeDbIdMapper.EMBL, BridgeDbIdMapper.Entrez_Gene, BridgeDbIdMapper.Gene_ID, BridgeDbIdMapper.GO,
-			BridgeDbIdMapper.GenBank, BridgeDbIdMapper.Illumina, BridgeDbIdMapper.InterPro, BridgeDbIdMapper.MGI,
-			BridgeDbIdMapper.PDB, BridgeDbIdMapper.RefSeq, BridgeDbIdMapper.UniGene, BridgeDbIdMapper.UNIPROT,
-			BridgeDbIdMapper.Uniprot_TrEMBL, BridgeDbIdMapper.UCSC_Genome_Browser);
-
+	public ListSingleSelection<String> source_selection = new ListSingleSelection<String>(MappingSource.allStrings());
+	
 	@Tunable(description = "To")
-	public ListSingleSelection<String> target_selection = new ListSingleSelection<String>(BridgeDbIdMapper.ENSEMBL,
-			BridgeDbIdMapper.EMBL, BridgeDbIdMapper.Entrez_Gene, BridgeDbIdMapper.Gene_ID, BridgeDbIdMapper.GO,
-			BridgeDbIdMapper.GenBank, BridgeDbIdMapper.Illumina, BridgeDbIdMapper.InterPro, BridgeDbIdMapper.MGI,
-			BridgeDbIdMapper.PDB, BridgeDbIdMapper.RefSeq, BridgeDbIdMapper.UniGene, BridgeDbIdMapper.UNIPROT,
-			BridgeDbIdMapper.Uniprot_TrEMBL, BridgeDbIdMapper.UCSC_Genome_Browser);
+	public ListSingleSelection<String> target_selection = new ListSingleSelection<String>(MappingSource.allStrings());
 //
 //	@Tunable(description = "New column name")
 	public String new_column_name = "";
@@ -75,10 +75,13 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		final String target = BridgeDbIdMapper.LONG_TO_SHORT.get(target_selection.getSelectedValue());
-		final String source = BridgeDbIdMapper.LONG_TO_SHORT.get(source_selection.getSelectedValue());
-		final String species = species_selection.getSelectedValue();
-
+		final MappingSource target = MappingSource.nameLookup(target_selection.getSelectedValue());
+		final MappingSource source = MappingSource.nameLookup(source_selection.getSelectedValue());
+		String species = species_selection.getSelectedValue();
+//		species = species.substring(0, species.indexOf(" ("));
+		saveSpecies = Species.lookupSpecies(species);
+		System.out.println("saving species as " + saveSpecies.name());
+		saveTarget = target;
 		boolean source_is_list = false;
 		if (column.getType() == List.class)
 			source_is_list = true;
@@ -102,7 +105,7 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
 		final Map<String, IdMapping> res;
 		try {
 			final BridgeDbIdMapper map = new BridgeDbIdMapper();
-			res = map.map(ids, source, target, species, species);
+			res = map.map(ids, source.system(), target.system(), saveSpecies.name(), saveSpecies.name());
 			matched_ids = map.getMatchedIds();
 			unmatched_ids = map.getUnmatchedIds();
 		} catch (final Exception e) {
@@ -132,9 +135,9 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
 			}
 			System.out.println();
 		}
-		new_column_name = BridgeDbIdMapper.SHORT_TO_LONG.get(target);
+		new_column_name = target.descriptor();
 		new_column_name = MappingUtil.makeNewColumnName(new_column_name,
-				BridgeDbIdMapper.SHORT_TO_LONG.get(source), new_column_name, column);
+				source.descriptor(), new_column_name, column);
 
 		boolean all_unique = true;
 		int non_unique = 0;
@@ -160,14 +163,14 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
 
 		final CyTable table = column.getTable();
 		Collection<CyColumn> cols = table.getColumns();
-		System.out.println("Indexing " + cols.toString());
+//		System.out.println("Indexing " + cols.toString());
 		int index = -1;
 		if (cols instanceof ArrayList)
 		{
-			System.out.println("Indexing " + column.getName());
+//			System.out.println("Indexing " + column.getName());
 			index = ((ArrayList) cols).indexOf(column.getName());
 		}
-		System.out.println("Index = " + index);
+//		System.out.println("Index = " + index);
 		
 		boolean many_to_one = false;
 		if (matched_ids.size() > 0) {
@@ -185,8 +188,8 @@ public class MapColumnTaskBridgeDb extends AbstractTableColumnTask {
 			many_to_one = MappingUtil.fillNewColumn(source_is_list, res, table, column, new_column_name,
 					only_use_one || all_single);
 		}
-		String targ = BridgeDbIdMapper.SHORT_TO_LONG.get(target);
-		String src = BridgeDbIdMapper.SHORT_TO_LONG.get(source);
+		String targ = target.descriptor();
+		String src = source.descriptor();
 		final String msg = MappingUtil.createMsg(new_column_name, targ, src, ids, matched_ids, all_unique, non_unique,
 				unique, min, max, many_to_one);
 
