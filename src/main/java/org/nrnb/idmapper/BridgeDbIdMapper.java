@@ -148,31 +148,23 @@ public class BridgeDbIdMapper implements IdMapper {
                                       final String target_type,
                                       final String source_species,
                                       final String target_species) {
-        List<String> res_list = null;
+        List<String> response = null;
         _matched_ids = new TreeSet<String>();
         _unmatched_ids = new TreeSet<String>();
         try {
-          System.out.println(target_species + ", " + source_type);
-            res_list = BridgeDbIdMapper.runQuery(query_ids,
-                                                 target_species,
-                                                 "xrefsBatch",
-                                                 source_type,
-                                                 _url);
+//          System.out.println(target_species + ", " + source_type);
+            response = BridgeDbIdMapper.runQuery(query_ids, target_species, "xrefsBatch", source_type,  _url);
         }
         catch (final IOException e) {
             e.printStackTrace();
         }
-        if (res_list != null) {
+        if (response != null) {
 //            for (final String l : res_list) {
 //                System.out.println(l);
 //            }
 
             try {
-                final Map<String, IdMapping> res = parseResponse(res_list,
-                                                                 source_species,
-                                                                 source_type,
-                                                                 target_species,
-                                                                 target_type);
+                final Map<String, IdMapping> res = parseResponse(response, source_species, source_type, target_species, target_type);
                 return res;
 
             }
@@ -285,25 +277,18 @@ public class BridgeDbIdMapper implements IdMapper {
         os.write(query.getBytes());
         os.flush();
 
-        if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-
+        if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) 
             throw new IOException("HTTP error code : " + conn.getResponseCode());
 
-        }
-
         final BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
-
         final List<String> res = new ArrayList<String>();
         String line;
-
-        while ((line = br.readLine()) != null) {
+        while ((line = br.readLine()) != null) 
             res.add(line);
-        }
 
         br.close();
         conn.disconnect();
         os.close();
-
         return res;
     }
 
@@ -324,11 +309,7 @@ public class BridgeDbIdMapper implements IdMapper {
                                                final String database,
                                                final String url_str) throws IOException {
         final String query = makeQuery(ids);
-        return post(url_str,
-                    species,
-                    target,
-                    database,
-                    query);
+        return post(url_str, species, target, database, query);
     }
 
     /**
@@ -342,12 +323,8 @@ public class BridgeDbIdMapper implements IdMapper {
         final StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (final String id : ids) {
-            if (first) {
-                first = false;
-            }
-            else {
-                sb.append("\n");
-            }
+            if (first)   first = false;
+            else  sb.append("\n");
             sb.append(id);
         }
         return sb.toString();
@@ -367,11 +344,8 @@ public class BridgeDbIdMapper implements IdMapper {
         final String source_species = "Mouse";
         final String target_species = "Mouse";
 
-        final Map<String, IdMapping> x = map.map(ids,
-                                                 source_type,
-                                                 target_type,
-                                                 source_species,
-                                                 target_species);
+        final Map<String, IdMapping> x = map.map(ids, source_type,
+                                    target_type, source_species, target_species);
 
 //        for (final Entry<String, IdMapping> entry : x.entrySet()) {
 //            System.out.println(entry.getKey() + "=>" + entry.getValue());

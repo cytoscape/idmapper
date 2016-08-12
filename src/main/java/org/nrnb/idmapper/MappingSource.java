@@ -28,6 +28,7 @@ public enum MappingSource {
 	private Pattern pattern;
 	private String example;
 	
+	//----------------------------------------------------------------------------
 	MappingSource(String s, String sy, String spec, String pat, String sample)
 	{
 		descriptor = s;
@@ -36,11 +37,13 @@ public enum MappingSource {
 		pattern = Pattern.compile(pat);
 		example = sample;
 	}
+	//----------------------------------------------------------------------------
 	public String descriptor()	{ return descriptor;	}
 	public String system()		{ return system;	}
 	public String species()		{ return species;	}
 	public Pattern pattern()	{ return pattern;	}
 	
+	//----------------------------------------------------------------------------
 	public static MappingSource systemLookup(String sys)
 	{
 		for (MappingSource src : MappingSource.values())
@@ -56,6 +59,7 @@ public enum MappingSource {
 				return src;
 		return null;		
 	}
+	//----------------------------------------------------------------------------
 	public static String[] allStrings() {
 		int n = values().length;
 		int i = 0;
@@ -64,7 +68,20 @@ public enum MappingSource {
 			strs[i++] = src.descriptor + " (e.g., " + src.example + ")";
 		return strs;
 	}
+	public static String[] allStringsExcept(String exclude) {
+		int n = values().length;
+		int i = 0;
+		String[] strs = new String[n];
+		for (MappingSource src : values())
+			if (!src.descriptor.equals(exclude))
+				strs[i++] = src.descriptor + " (e.g., " + src.example + ")";
+		return strs;
+	}
+	//----------------------------------------------------------------------------
+	private boolean patternMatch(String id) {		return pattern.matcher(id).matches();	}
+
 	private static boolean VERBOSE = false;
+
 	public static MappingSource guessSource(List<String> names) {
 
 		Map<MappingSource, Integer> counter = new HashMap<MappingSource, Integer>();
@@ -95,7 +112,6 @@ public enum MappingSource {
 			System.out.println(maxSrc.descriptor +  " is maximum with  " + counter.get(maxSrc) + " matches");
 		return maxSrc;
 	}
-	private boolean patternMatch(String id) {		return pattern.matcher(id).matches();	}
 
 }
 

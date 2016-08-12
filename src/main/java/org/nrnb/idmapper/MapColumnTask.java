@@ -1,10 +1,12 @@
 package org.nrnb.idmapper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
@@ -12,6 +14,11 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySession;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.AbstractTableColumnTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -39,33 +46,92 @@ public class MapColumnTask extends AbstractTableColumnTask {
 	public static final boolean VERBOSE = false;
 	private static Species saveSpecies = Species.Mouse;
 	private static MappingSource saveTarget = MappingSource.ENSEMBL;
-
-	MapColumnTask(final UndoSupport undoSupport, final CyColumn column) {
+	private  final CyServiceRegistrar registrar;
+	MapColumnTask(final UndoSupport undoSupport, final CyColumn column, final CyServiceRegistrar reg) {
 		super(column);
+		registrar = reg;
 		// get species from property
 		Species.buildMaps();
+		saveSpecies = getSpeciesProperty();
 		species_selection.setSelectedValue(saveSpecies.name());
 		final List<String> names = column.getValues(String.class);
 		MappingSource src = MappingSource.guessSource(names);
 		source_selection.setSelectedValue(src.descriptor());
+		target_selection.setPossibleValues(Arrays.asList(MappingSource.allStringsExcept(src.descriptor())));
 		target_selection.setSelectedValue(saveTarget.descriptor());
 	}
 
-	@ProvidesTitle
-	public String getTitle() {
-		return "ID Mapping";
+	Species getSpeciesProperty()
+	{
+		String species = "Human";
+		CySessionManager sessionMgr = registrar.getService(CySessionManager.class);
+		if (sessionMgr != null) {
+			CySession session = sessionMgr.getCurrentSession();
+			if (session != null)
+			{
+			    Set<CyProperty<?>> props = session.getProperties();
+			    if (props != null)
+			    {
+			    	for (CyProperty<?> prop : props)
+			    	{
+			    		if (prop.getProperties() instanceof Properties)
+			    		{		
+			    			Properties p = (Properties) prop.getProperties();
+				    		String speciesProp = p.getProperty("species");
+//				    		System.out.println(speciesProp);
+				    		if (speciesProp != null)
+				    			saveSpecies = Species.lookup(speciesProp);
+		    		
+			    		}
+			    	}
+			    }
+			}
+		}
+//	    return Species.lookupSpecies(species);
+	    return saveSpecies;
 	}
+	void putSpeciesProperty()
+	{
+		CySessionManager sessionMgr = registrar.getService(CySessionManager.class);
+		if (sessionMgr != null) {
+			CySession session = sessionMgr.getCurrentSession();
+			if (session != null)
+			{
+			    Set<CyProperty<?>> props = session.getProperties();
+			    if (props != null)
+			    {
+//			    	SimpleCyProperty<Properties> newProp = new SimpleCyProperty<Properties>("Species.properties", props, Properties.class,
+//							CyProperty.SavePolicy.SESSION_FILE); 
+//			    			props.add(newProp);
+			    }
+			}
+		}
+	    return ;
+	}
+	
+	void saveSpeciesProperty(Species cur)
+	{
+		saveSpecies = cur;
+	}
+	
+	
+	
+	@ProvidesTitle
+	public String getTitle() {		return "ID Mapping";	}
 
 	@Tunable(description = "Species")
 	public ListSingleSelection<String> species_selection = new ListSingleSelection<String>(Species.fullNames());
 
-	// AbstractCyNetworkReader:98
+	// look at AbstractCyNetworkReader:98 for an example of Tunables with methods
 	@Tunable(description = "Map from")
 	public ListSingleSelection<String> source_selection = new ListSingleSelection<String>(MappingSource.allStrings());
 	
 	@Tunable(description = "To")
-	public ListSingleSelection<String> target_selection = new ListSingleSelection<String>(MappingSource.allStrings());
-//
+	public ListSingleSelection<String> target_selection	= new ListSingleSelection<String>(MappingSource.allStrings());
+
+	
+	
+	//
 //	@Tunable(description = "New column name")
 	public String new_column_name = "";
 
@@ -79,8 +145,8 @@ public class MapColumnTask extends AbstractTableColumnTask {
 		final MappingSource source = MappingSource.nameLookup(source_selection.getSelectedValue());
 		String species = species_selection.getSelectedValue();
 //		species = species.substring(0, species.indexOf(" ("));
-		saveSpecies = Species.lookupSpecies(species);
-		System.out.println("saving species as " + saveSpecies.name());
+		saveSpecies = Species.lookup(species);
+//		System.out.println("saving species as " + saveSpecies.name());
 		saveTarget = target;
 		boolean source_is_list = false;
 		if (column.getType() == List.class)
@@ -152,10 +218,8 @@ public class MapColumnTask extends AbstractTableColumnTask {
 					if (v.size() > 1) {
 						all_unique = false;
 						++non_unique;
-						if (v.size() > max)
-							max = v.size();
-						if (v.size() < min)
-							min = v.size();
+						if (v.size() > max)		max = v.size();
+						if (v.size() < min)		min = v.size();
 					} else
 						++unique;
 				}
@@ -175,15 +239,14 @@ public class MapColumnTask extends AbstractTableColumnTask {
 		boolean many_to_one = false;
 		if (matched_ids.size() > 0) {
 			boolean all_single = false;
-			if (only_use_one) {
+			if (only_use_one) 
 				table.createColumn(new_column_name, String.class, false);
-			} else {
+			else {
 				all_single = MappingUtil.isAllSingle(source_is_list, res, column, table);
-				if (all_single) {
+				if (all_single) 
 					table.createColumn(new_column_name, String.class, false);
-				} else {
+				 else 
 					table.createListColumn(new_column_name, String.class, false);
-				}
 			}
 			many_to_one = MappingUtil.fillNewColumn(source_is_list, res, table, column, new_column_name,
 					only_use_one || all_single);

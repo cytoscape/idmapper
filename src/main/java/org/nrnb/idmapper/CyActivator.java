@@ -28,6 +28,7 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 import java.util.Properties;
 
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
@@ -38,25 +39,18 @@ public class CyActivator extends AbstractCyActivator {
     @Override
     public void start(BundleContext bc) {
 
-        final UndoSupport undoSupportServiceRef = getService(bc,
-                UndoSupport.class);
+        final UndoSupport undo = getService(bc, UndoSupport.class);
+        final TunableSetter tunable = getService(bc, TunableSetter.class);
+        final CyServiceRegistrar reg = getService(bc, CyServiceRegistrar.class);
 
-        final TunableSetter tunableSetterServiceRef = getService(bc,
-                TunableSetter.class);
-
-        final MapColumnTaskFactoryImpl mapColumnTaskFactory = new MapColumnTaskFactoryImpl(
-                undoSupportServiceRef, tunableSetterServiceRef);
+        final MapColumnTaskFactoryImpl mapColumnTaskFactory = new MapColumnTaskFactoryImpl( undo, tunable, reg);
 
         final Properties mapColumnTaskFactoryProps = new Properties();
         mapColumnTaskFactoryProps.setProperty(TITLE, "Map colum...");
         mapColumnTaskFactoryProps.setProperty(COMMAND, "map column");
         mapColumnTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-        mapColumnTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,
-                "Map a column in a table!!");
-        registerService(bc, mapColumnTaskFactory, TableColumnTaskFactory.class,
-                mapColumnTaskFactoryProps);
-        registerService(bc, mapColumnTaskFactory, MapColumnTaskFactory.class,
-                mapColumnTaskFactoryProps);
-
+        mapColumnTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,  "Map a column contents to another id format");
+        registerService(bc, mapColumnTaskFactory, TableColumnTaskFactory.class, mapColumnTaskFactoryProps);
+        registerService(bc, mapColumnTaskFactory, MapColumnTaskFactory.class, mapColumnTaskFactoryProps);
     }
 }

@@ -46,8 +46,10 @@ public enum Species {
 		}
 	}
 	
+	String common()		{ return name;		}
+	String latin()		{ return latin;		}
 	//--------------------------------------------------------------------
-	public static Species lookupSpecies(String input)
+	public static Species lookup(String input)
 	{
 		int idx = input.indexOf(" (");
 		if (idx > 0) input = input.substring(0,idx);

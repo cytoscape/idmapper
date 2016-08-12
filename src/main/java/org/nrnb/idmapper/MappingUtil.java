@@ -33,9 +33,7 @@ public final class MappingUtil {
             String v_str = (String) v;
             if (v_str != null) {
                 v_str = v_str.trim();
-                if (v_str.length() > 0) {
-                    ids.add(v_str);
-                }
+                if (v_str.length() > 0)    ids.add(v_str);
             }
         }
     }
@@ -81,12 +79,8 @@ public final class MappingUtil {
                                 if (!matched.isEmpty()) {
                                     for (final String m : matched) {
                                         if ((m != null) && (m.length() > 0)) {
-                                            if (ts.contains(m)) {
-                                                many_to_one = true;
-                                            }
-                                            else {
-                                                ts.add(m);
-                                            }
+                                            if (ts.contains(m))      many_to_one = true;
+                                            else    ts.add(m);
                                         }
                                     }
                                 }
@@ -94,13 +88,8 @@ public final class MappingUtil {
 						}
 					}
 					final List<String> l = new ArrayList<String>(ts);
-					if (!l.isEmpty()) {
-						if (force_single) {
-							row.set(new_column_name, l.get(0));
-						} else {
-							row.set(new_column_name, l);
-						}
-					}
+					if (!l.isEmpty()) 
+						row.set(new_column_name, (force_single) ? l.get(0) : l);
 				}
             }
         }
@@ -112,25 +101,19 @@ public final class MappingUtil {
                     if (res.containsKey(in_val)) {
                         final Set<String> matched = res.get(in_val).getTargetIds();
                         if (!matched.isEmpty()) {
-                            if (force_single) {
-                                row.set(new_column_name,
-                                        matched.iterator().next());
-                            }
+                            if (force_single) 
+                                row.set(new_column_name,  matched.iterator().next());
                             else {
                                 final TreeSet<String> ts = new TreeSet<String>();
                                 for (final String m : matched) {
                                     if ((m != null) && (m.length() > 0)) {
-                                        if (ts.contains(m)) {
-                                            many_to_one = true;
-                                        }
-                                        else {
-                                            ts.add(m);
-                                        }
+                                        if (ts.contains(m))    many_to_one = true;
+                                        else                   ts.add(m);
+                                        
                                     }
                                 }
                                 final List<String> l = new ArrayList<String>(ts);
-                                row.set(new_column_name,
-                                        l);
+                                row.set(new_column_name, l);
                             }
                         }
                     }
@@ -196,11 +179,8 @@ public final class MappingUtil {
                         if (!matched.isEmpty()) {
                             final TreeSet<String> ts = new TreeSet<String>();
                             for (final String m : matched) {
-                                if ((m != null) && (m.length() > 0)) {
-
+                                if ((m != null) && (m.length() > 0)) 
                                     ts.add(m);
-
-                                }
                             }
                             list.add(ts);
                         }
