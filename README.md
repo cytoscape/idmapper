@@ -6,5 +6,3 @@ This is a Cytoscape app that allows identifier mapping on tables.   Once this ap
 A dialog is shown to gather the information about the species, and which columns you want to map **From** (the source) and **To** (the target).  By default, multiple return values will be simplified to the first in the list, but turning off the **Force Single** checkbox will maintain all returned IDs.
 
 Once the dialog is confirmed, a new column will be added to the Node Table containing the mapped identifiers.
-
-Note that we are pointed at __/webservice.bridgedb.org:8185__ in BridgeDbIdMapper:33.  This is a test server.
