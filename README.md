@@ -1,5 +1,6 @@
-# idmap-impl
-Identifier mapping
+# core-idmapper
+
+BridgeDB based Identifier mapping
 
 This is a Cytoscape app that allows identifier mapping on tables.   Once this app is installed, the table browser will respond to a right click on the column header with a pop-up menu containing the item **Map Column...**  
 
