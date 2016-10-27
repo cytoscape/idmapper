@@ -6,12 +6,11 @@ import org.cytoscape.task.AbstractTableColumnTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
-import org.osgi.framework.ServiceRegistration;
 
 public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory implements MapColumnTaskFactory {
 
 	private final UndoSupport undoSupport;
-	CyServiceRegistrar serviceRegistrar;
+	private CyServiceRegistrar serviceRegistrar;
 
 	public MapColumnTaskFactoryImpl(final UndoSupport undo, final TunableSetter tunable,final CyServiceRegistrar reg) {
 		this.undoSupport = undo;
@@ -24,7 +23,7 @@ public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory imp
 		if (column == null)
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
 
-		return new TaskIterator(new MapColumnTask(undoSupport, column, serviceRegistrar));
+		return new TaskIterator(new ColumnMappingTask(undoSupport, column, serviceRegistrar));
 	}
 
 	@Override

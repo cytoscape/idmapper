@@ -1,9 +1,11 @@
 package org.nrnb.idmapper;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-
+// this is a partial list of the most commonly studied species
 // see http://webservice.bridgedb.org/contents for full list supported in BridgeDB
 public enum Species {
 	   Human("Human", "Homo sapiens") ,
@@ -48,13 +50,14 @@ public enum Species {
 	
 	String common()		{ return name;		}
 	String latin()		{ return latin;		}
+	String fullname() 	{ return name + " (" + latin + ")";	}
 	//--------------------------------------------------------------------
 	public static Species lookup(String input)
 	{
 		int idx = input.indexOf(" (");
 		if (idx > 0) input = input.substring(0,idx);
 		for (Species s : values())
-			if (s.name.equals(input) || s.latin.equals(input))
+			if (s.name.equals(input) || s.latin.equals(input)) 	
 				return s;
 		return null;
 	}
@@ -75,12 +78,34 @@ public enum Species {
 			latinnames[i++] = spec.latin;
 		return latinnames;		
 	}
-	public static String[] fullNames()
+	public static String[] fullNameArray()
 	{
 		String[] fullNames = new String[Species.values().length];
 		int i = 0;
 		for (Species spec : values())
-			fullNames[i++] = spec.name + " (" + spec.latin + ")";
+			fullNames[i++] = spec.fullname();
 		return fullNames;		
+	}
+	public static List<String> fullNames()
+	{
+		List<String> fullNames = new ArrayList<String>();
+		for (Species spec : values())
+			fullNames.add(spec.fullname());
+		return fullNames;		
+	}
+	
+
+	public boolean equals(String other)
+	{
+		if ( name.equals(other)) return true;
+		if ( latin.equals(other)) return true;
+		return false;
+	}
+	public boolean match(Species other)
+	{
+		if (other == null || other.name().trim().length() == 0) return true;	
+//		System.out.print(" " + name + " - " + other.name);
+		if (name.equals(other.name)) return true;
+		return false;
 	}
 }

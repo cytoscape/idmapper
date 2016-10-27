@@ -268,7 +268,8 @@ public final class MappingUtil {
                                          final int unique,
                                          final int min,
                                          final int max,
-                                         final boolean many_to_one) {
+                                         final boolean many_to_one, 
+                                         final boolean force_single) {
         final String msg;
         String srcTarget = "Mapped: " + source + " -> " + target + "\n" ;
         if (matched_ids.size() < 1) 
@@ -278,7 +279,11 @@ public final class MappingUtil {
 		if (all_unique)
 			o2o = "All mappings one-to-one." + "\n";
 		else {
-			o2o = "Not all mappings one-to-one:" + "\n" + "  one-to-one: " + unique + "\n" + "  one-to-many: " + non_unique;
+			String intro = force_single ? 			// Issue #16
+					"Some mappings reduced to first value:" : 
+					"Not all mappings one-to-one:";	
+			
+			o2o = intro + "\n" + "  one-to-one: " + unique + "\n" + "  one-to-many: " + non_unique;
 			o2o += (min != max) ? " (range: 1-to-" + min + " ~ 1-to-" + max + ")\n" : " (1-to-" + min + ")\n";
 		}
 
