@@ -1,4 +1,4 @@
-# core-idmapper
+#idmapper
 
 BridgeDB based Identifier mapping
 
