@@ -1,4 +1,4 @@
-package org.nrnb.idmapper;
+package org.cytoscape.idmapper.internal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,9 +48,10 @@ public enum Species {
 		}
 	}
 	
-	String common()		{ return name;		}
-	String latin()		{ return latin;		}
-	String fullname() 	{ return name + " (" + latin + ")";	}
+	public String common()		{ return name;		}
+	public String latin()		{ return latin;		}
+	public String fullname() 	{ return name + " (" + latin + ")";	}
+	
 	//--------------------------------------------------------------------
 	public static Species lookup(String input)
 	{
@@ -94,7 +95,6 @@ public enum Species {
 		return fullNames;		
 	}
 	
-
 	public boolean equals(String other)
 	{
 		if ( name.equals(other)) return true;

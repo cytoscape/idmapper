@@ -1,4 +1,4 @@
-package org.nrnb.idmapper;
+package org.cytoscape.idmapper.internal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.cytoscape.idmapper.IdMapping;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;

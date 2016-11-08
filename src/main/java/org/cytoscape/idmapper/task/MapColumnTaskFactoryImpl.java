@@ -1,4 +1,4 @@
-package org.nrnb.idmapper;
+package org.cytoscape.idmapper.task;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;

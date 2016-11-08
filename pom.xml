@@ -2,18 +2,18 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<properties>
-		<bundle.symbolicName>idmapper</bundle.symbolicName>
-		<bundle.namespace>org.nrnb.idmapper</bundle.namespace>
+		<bundle.symbolicName>org.cytoscape.idmapper</bundle.symbolicName>
+		<bundle.namespace>org.cytoscape.idmapper</bundle.namespace>
 		<cytoscape.api.version>3.3.0</cytoscape.api.version>
+		<maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
 		<maven-bundle-plugin.version>2.3.4</maven-bundle-plugin.version>
 		<osgi.api.version>4.2.0</osgi.api.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
-
-	<groupId>org.nrnb</groupId>
+	<groupId>org.cytoscape</groupId>
 	<artifactId>idmapper</artifactId>
 	<packaging>bundle</packaging>
-
 	<name>ID Mapper</name>
 	<version>1.0.1</version>
 
@@ -54,10 +54,45 @@
 			<releases><enabled>true</enabled></releases>
 		</repository>
 	</repositories>
-
+	
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<name>Internal Releases</name>
+			<url>http://code.cytoscape.org/nexus/content/repositories/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>Internal Snapshots</name>
+			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+	
+	<scm>
+		<connection>scm:https://github.com/cytoscape/idmapper.git</connection>
+		<developerConnection>scm:git@github.com:cytoscape/idmapper.git</developerConnection>
+	</scm>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<encoding>UTF-8</encoding>
+					<optimize>true</optimize>
+					<showWarnings>true</showWarnings>
+					<showDeprecation>true</showDeprecation>
+					<compilerArguments>
+						<Xmaxwarns>10000</Xmaxwarns>
+						<Xmaxerrs>10000</Xmaxerrs>
+					</compilerArguments>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -66,17 +101,22 @@
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
-						<Bundle-Version>1.0.1</Bundle-Version>
-						<Export-Package>!${bundle.namespace}.*</Export-Package>
+						<Bundle-Version>${project.version}</Bundle-Version>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
-						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Export-Package>!*</Export-Package>
+						<Bundle-Activator>${bundle.namespace}.internal.CyActivator</Bundle-Activator>
+						<Embed-Dependency>*;scope=!provided|test;groupId=!org.cytoscape</Embed-Dependency>
+						<Embed-Transitive>true</Embed-Transitive>
+						<Import-Package>*;resolution:=optional</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-
-		<dependencies>
+	
+	<dependencies>
+	
+		<!-- Cytoscape APIs -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
@@ -161,6 +201,7 @@
 			<version>${cytoscape.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.ops4j.pax.logging</groupId>
 			<artifactId>pax-logging-api</artifactId>
@@ -173,23 +214,22 @@
 			<version>${osgi.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<!-- 3rd party dependencies -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.5</version>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
 			<version>1.1.1</version>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.10</version>
-			<optional>true</optional>
 		</dependency>
 
 	</dependencies>

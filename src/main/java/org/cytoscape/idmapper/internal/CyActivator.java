@@ -1,4 +1,4 @@
-package org.nrnb.idmapper;
+package org.cytoscape.idmapper.internal;
 
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
@@ -7,6 +7,8 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.Properties;
 
+import org.cytoscape.idmapper.task.MapColumnTaskFactory;
+import org.cytoscape.idmapper.task.MapColumnTaskFactoryImpl;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableColumnTaskFactory;

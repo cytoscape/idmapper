@@ -1,4 +1,4 @@
-package org.nrnb.idmapper;
+package org.cytoscape.idmapper.internal;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,6 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.cytoscape.idmapper.IdGuess;
+import org.cytoscape.idmapper.IdMapper;
+import org.cytoscape.idmapper.IdMapping;
+
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;

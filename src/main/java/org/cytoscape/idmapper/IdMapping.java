@@ -1,6 +1,8 @@
-package org.nrnb.idmapper;
+package org.cytoscape.idmapper;
 
 import java.util.Set;
+
+import org.cytoscape.idmapper.internal.MappingSource;
 
 /**
  * This is used to express one-to-one, one-to-many, many-to-one, and

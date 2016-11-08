@@ -1,8 +1,10 @@
-package org.nrnb.idmapper;
+package org.cytoscape.idmapper.internal;
 
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.cytoscape.idmapper.IdMapping;
 
 /**
  * A basic implementation of a IdMapping.

@@ -1,4 +1,4 @@
-package org.nrnb.idmapper;
+package org.cytoscape.idmapper.internal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
