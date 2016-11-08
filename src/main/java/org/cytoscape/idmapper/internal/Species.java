@@ -51,16 +51,16 @@ public enum Species {
 	public String common()		{ return name;		}
 	public String latin()		{ return latin;		}
 	public String fullname() 	{ return name + " (" + latin + ")";	}
-	
 	//--------------------------------------------------------------------
 	public static Species lookup(String input)
 	{
+		if (input == null || input.length() == 0 ) return Human;
 		int idx = input.indexOf(" (");
 		if (idx > 0) input = input.substring(0,idx);
 		for (Species s : values())
 			if (s.name.equals(input) || s.latin.equals(input)) 	
 				return s;
-		return null;
+		return Human;
 	}
 	//--------------------------------------------------------------------
 	public static String[] commonNames()
@@ -95,6 +95,7 @@ public enum Species {
 		return fullNames;		
 	}
 	
+
 	public boolean equals(String other)
 	{
 		if ( name.equals(other)) return true;
