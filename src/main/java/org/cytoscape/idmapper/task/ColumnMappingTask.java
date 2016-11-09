@@ -1,4 +1,4 @@
-package org.cytoscape.idmapper.task;
+package org.nrnb.idmapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,11 +9,6 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.idmapper.IdMapping;
-import org.cytoscape.idmapper.internal.BridgeDbIdMapper;
-import org.cytoscape.idmapper.internal.MappingSource;
-import org.cytoscape.idmapper.internal.MappingUtil;
-import org.cytoscape.idmapper.internal.Species;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -68,13 +63,15 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 		
 		
 	private void resetSpecies() {
-		saveSpecies = Species.lookup(speciesList.getSelectedValue());
+		String selected = speciesList.getSelectedValue();
+		saveSpecies = Species.lookup(selected);
 //		System.out.println("resetSpecies: " + saveSpecies.name());
 		speciesList.setPossibleValues(Species.fullNames());
-		speciesList.setSelectedValue(saveSpecies.fullname());
+		if (!selected.equals(saveSpecies.fullname()))
+			speciesList.setSelectedValue(saveSpecies.fullname());
 		guessSource();
-		
 	}	
+	
 	private void guessSource() {
 		source_selection.setPossibleValues(MappingSource.filteredStrings(saveSpecies, null));
 		if (column != null)
