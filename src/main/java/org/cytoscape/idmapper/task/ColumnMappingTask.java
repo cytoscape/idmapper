@@ -1,4 +1,4 @@
-package org.nrnb.idmapper;
+package org.cytoscape.idmapper.task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +9,11 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.idmapper.IdMapping;
+import org.cytoscape.idmapper.internal.BridgeDbIdMapper;
+import org.cytoscape.idmapper.internal.MappingSource;
+import org.cytoscape.idmapper.internal.MappingUtil;
+import org.cytoscape.idmapper.internal.Species;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
