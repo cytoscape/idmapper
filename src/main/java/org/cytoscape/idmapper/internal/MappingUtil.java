@@ -30,7 +30,8 @@ public final class MappingUtil {
      */
     public final static void addCleanedStrValueToList(final List<String> ids,
                                                       final Object v) {
-        if ((ids != null) && (v != null)) {
+       if (v instanceof String)
+    	   if ((ids != null) && (v != null)) {
             String v_str = (String) v;
             if (v_str != null) {
                 v_str = v_str.trim();

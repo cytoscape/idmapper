@@ -10,7 +10,7 @@ public enum MappingSource {
 
 //	Unspecified ("Unspecified", "", "", "^[A-Za-z0-9]+", "" ),
 	HGNC ("HGNC", "H", "Homo sapiens", "^[A-Za-z0-9]+", "DAPK1" ),
-	ENSEMBL ("Ensembl", "En", "", "^ENS[A-Z]*[FPTG]\\d{11}$", "ENSG00000139618"),
+	ENSEMBL ("Ensembl", "En", "", "^ENS[A-Z]*[FPTG]\\d{11}$", "ENSG00000139618"),			//|^[YFW]*$		also accept anything that starts with Y, F, W ??
 	Entrez_Gene ("Entrez Gene", "L", "", "^\\d+$", "11234"),
 	FlyBase ("FlyBase", "F", "Drosophila melanogaster", "^FB\\w{2}\\d{7}$", "FBgn0011293"),
 	KEGG_Genes ("KEGG Genes", "Kg", "", "^\\w+:[\\w\\d\\.-]*$", "syn:ssr3451" ),
@@ -85,9 +85,11 @@ public enum MappingSource {
 //				strs[i++] = src.getMenuString();
 //		return strs;
 //	}
+	
+	// get the list of sources that are available for this species
 	public static List<String> filteredStrings(Species inSpecies, MappingSource inSource) {
 		int n = values().length;
-		List<String> strs = new ArrayList<String>();
+		List<String> matchingSources = new ArrayList<String>();
 		String srcName = inSource == null ? "" : inSource.name();
 		for (MappingSource src : values())
 		{
@@ -95,11 +97,16 @@ public enum MappingSource {
 			if (src.matchSpecies(inSpecies))
 			{
 				if (!src.name().equals(srcName))
-					strs.add(src.getMenuString());
+					matchingSources.add(src.getMenuString());
 			}
 		}
-	return strs;	
+		if (VERBOSE) System.out.println(inSpecies.common() + " " + srcName);
+		if (inSpecies==Species.Yeast )
+			matchingSources.add(MappingSource.ENSEMBL.getMenuString());
+			
+	return matchingSources;	
 	}
+	
 	public String getMenuString() {
 		String ex = ((example.trim().length() > 0) ? " (e.g., " + example + ")" : "");
 		return descriptor + ex;
@@ -107,13 +114,9 @@ public enum MappingSource {
 	//----------------------------------------------------------------------------
 	private boolean patternMatch(String id) 
 	{		
-		if (pattern == null)
-			System.out.println("pattern == null");
-		else if (pattern.matcher(id) == null)
-			System.out.println("pattern.matcher(id) == null");
-		else return pattern.matcher(id).matches();	
-		return false;
-		
+		if (pattern == null)				return false;
+		if (pattern.matcher(id) == null)	return false;
+		return pattern.matcher(id).matches();	
 	}
 
 	private static boolean VERBOSE = false;
@@ -131,8 +134,15 @@ public enum MappingSource {
 		{
 			String id = names.get(i);
 			for (MappingSource src : values())
+			{
 				if (src.matchSpecies(inSpecies) && src.patternMatch(id))
 					counter.put(src, counter.get(src)+1);
+			}
+			int ensemblCt = counter.get(MappingSource.ENSEMBL) + 1;
+			if ((inSpecies == Species.Yeast && id.startsWith("Y")) ||
+					(inSpecies == Species.Fruit_fly && id.startsWith("F")) ||
+						(inSpecies == Species.Worm && id.startsWith("W")))
+				counter.put(MappingSource.ENSEMBL, ensemblCt);
 		}
 		MappingSource maxSrc = null;
 		int maxCount = 0;
