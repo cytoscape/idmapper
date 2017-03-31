@@ -39,11 +39,15 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 	ColumnMappingTask(final UndoSupport undoSupport, final CyColumn column, final CyServiceRegistrar reg) {
 		super(column);
 //		registrar = reg;
-		Species.buildMaps();
-		speciesList.addListener(this);
-		source_selection.addListener(this);
-		target_selection.addListener(this);
-		resetSpecies();
+		if (column.getType() == String.class)
+		{
+			Species.buildMaps();
+			speciesList.setPossibleValues(Species.fullNames());
+			speciesList.addListener(this);
+			source_selection.addListener(this);
+			target_selection.addListener(this);
+			resetSpecies();
+		}
 	}
 	public void selectionChanged(ListSelection<String> source) 
 	{
@@ -56,11 +60,15 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 		{
 			ListSingleSelection<String> src = (ListSingleSelection<String>)source;
 			if (src == speciesList)
+			{
+				String selected = speciesList.getSelectedValue();
+				saveSpecies = Species.lookup(selected);
+				if (VERBOSE) System.out.println("setting Species to: " + saveSpecies.fullname());
 				resetSpecies();
-			else if (src == source_selection)
-				resetSource();
+			}
+			else if (src == source_selection)		resetSource();
 			else if (src == target_selection)
-			{}//	System.out.println("target is: " + target_selection.getSelectedValue());
+			{}			//	System.out.println("target is: " + target_selection.getSelectedValue());
 			else
 			System.err.println("selectionChanged error: " + source.toString());
 		}
@@ -68,30 +76,29 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 		
 		
 	private void resetSpecies() {
-		String selected = speciesList.getSelectedValue();
-		saveSpecies = Species.lookup(selected);
-//		System.out.println("resetSpecies: " + saveSpecies.name());
-		speciesList.setPossibleValues(Species.fullNames());
-		if (!selected.equals(saveSpecies.fullname()))
-			speciesList.setSelectedValue(saveSpecies.fullname());
+		speciesList.setSelectedValue(saveSpecies.fullname());
 		guessSource();
 	}	
 	
 	private void guessSource() {
-		source_selection.setPossibleValues(MappingSource.filteredStrings(saveSpecies, null));
+		
+		List<String> strs = MappingSource.filteredStrings(saveSpecies, null);
+		if (VERBOSE) System.out.println("filteredStrings: " + strs);
+		source_selection.setPossibleValues(strs);
+		
 		if (column != null)
 		{
 			final List<String> ids = column.getValues(String.class);
 			saveSource = MappingSource.guessSource(saveSpecies, ids);
 			source_selection.setSelectedValue(saveSource.getMenuString());
-			System.out.println("\nguessed Source: " + saveSource.getMenuString());
+			if (VERBOSE) System.out.println("\nguessed Source: " + saveSource.getMenuString());
 			resetSource();
 		}		
 	}
 	private void resetSource() {
 		String src = source_selection.getSelectedValue();
 		saveSource = MappingSource.nameLookup(src);
-//		System.out.println("resetSource: " + src + ", " + saveSource.descriptor());
+		if (VERBOSE) System.out.println("resetSource: " + src + ", " + saveSource.descriptor());
 //		source_selection.setSelectedValue(saveSource.getMenuString());
 		resetTarget(saveSource);
 	}
@@ -163,12 +170,16 @@ private void resetTarget(MappingSource src)
 		String rawTarget = target_selection.getSelectedValue();
 		String rawSource = source_selection.getSelectedValue();
 		final MappingSource source = MappingSource.nameLookup(rawSource);
-//		System.out.println("prior target was " + saveTarget);
+		if (column.getType() ==  Double.class || column.getType() ==  Integer.class || column.getType() ==  Boolean.class)
+		{
+			if (VERBOSE) System.out.println("Can't map a numeric column as identifiers");		// tell the user?
+			return;
+		}
 //		System.out.println("raw str: " + rawTarget);
 		saveTarget = MappingSource.nameLookup(rawTarget);
 //		System.out.println("reading target as " + saveTarget);
 		saveSpecies = Species.lookup(species);
-//		System.out.println("saving species as " + saveSpecies.name());
+		if (VERBOSE) System.out.println("saving species as " + saveSpecies.name());
 //		System.out.println("saving source as " + source.name());
 //		System.out.println("saving target as " + saveTarget.name());
 //		System.out.println("--------------------------");
