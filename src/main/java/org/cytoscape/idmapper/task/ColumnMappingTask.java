@@ -1,6 +1,7 @@
 package org.cytoscape.idmapper.task;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,6 +22,7 @@ import org.cytoscape.task.AbstractTableColumnTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListSelection;
@@ -31,14 +33,16 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 
 
 //	public static final boolean DEBUG = true;
-	public static final boolean VERBOSE = false;
+	public static final boolean VERBOSE = true;
 	private static Species saveSpecies = Species.Human;
 	private static MappingSource saveSource = MappingSource.Entrez_Gene;
 	private static MappingSource saveTarget = MappingSource.Entrez_Gene;
-//	private  final CyServiceRegistrar registrar;
-	ColumnMappingTask(final UndoSupport undoSupport, final CyColumn column, final CyServiceRegistrar reg) {
+	private  final CyServiceRegistrar registrar;
+
+
+	public  	ColumnMappingTask(final UndoSupport undoSupport, final CyColumn column, final CyServiceRegistrar reg) {
 		super(column);
-//		registrar = reg;
+		registrar = reg;
 		if (column.getType() == String.class)
 		{
 			Species.buildMaps();
@@ -335,5 +339,17 @@ private void resetTarget(MappingSource src)
 //		}
 //		return -1;
 //	}
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
+	public Object getResults(Class requestedType) {
+		if (requestedType.equals(String.class))			return new_column_name;
+		if (requestedType.equals(JSONResult.class)) 
+		{
+			JSONResult res = () -> { if (new_column_name == null) 		return "{ }";
+			return new_column_name;
+		};
+		return res;
+		}
+		return null;
+		}
 
 }
