@@ -19,6 +19,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractTableColumnTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -28,8 +29,8 @@ import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
-public class ColumnMappingTask extends AbstractTableColumnTask 
-								implements ListChangeListener<String> {
+public class ColumnMappingTask extends AbstractTableColumnTask
+								implements ListChangeListener<String>, ObservableTask {
 
 
 //	public static final boolean DEBUG = true;
