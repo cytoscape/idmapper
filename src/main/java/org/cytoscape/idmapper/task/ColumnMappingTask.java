@@ -133,8 +133,8 @@ private void resetTarget(MappingSource src)
 	
 	
 	// look at AbstractCyNetworkReader:98 for an example of Tunables with methods
-	@Tunable(description="Species", gravity=0.0)
-	public ListSingleSelection<String> speciesList  =  new ListSingleSelection<String>(Species.fullNames());;
+	@Tunable(description="Species", gravity=0.0, longDescription="The latin name of the species to which the identifiers apply",exampleStringValue = "Homo Sapiens")
+	public ListSingleSelection<String> speciesList  =  new ListSingleSelection<String>(Species.fullNames());
 //	public ListSingleSelection<String> getspecies_selection()
 //	{
 //		if (speciesList == null)
@@ -154,15 +154,15 @@ private void resetTarget(MappingSource src)
 //		resetInterfaceToSpecies();
 //	}
 	//------------------------------------------------------------------------
-	@Tunable(description="Map from", gravity=1.0)
+	@Tunable(description="Map from", gravity=1.0, longDescription="Specifies the database describing the existing identifiers", exampleStringValue="ENSEMBL")
 //	public ListSingleSelection<String> source_selection = new ListSingleSelection<String>(MappingSource.allStrings());
 	public ListSingleSelection<String> source_selection = new ListSingleSelection<String>();
 
-	@Tunable(description="To", gravity=2.0)
+	@Tunable(description="To", gravity=2.0, longDescription="Specifies the database identifiers to be looked up", exampleStringValue="Entrez")
 //	public ListSingleSelection<String> target_selection	= new ListSingleSelection<String>(MappingSource.allStrings());
 	public ListSingleSelection<String> target_selection	= new ListSingleSelection<String>();
 
-	@Tunable(description="Force single ", gravity=3.0)
+	@Tunable(description="Force single ", gravity=3.0, longDescription="When multiple identifiers can be mapped from a single term, this forces a singular result", exampleStringValue="false")
 	public boolean only_use_one = true;
 	
 	//------------------------------------------------------------------------
