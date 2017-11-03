@@ -18,6 +18,7 @@ import org.cytoscape.idmapper.internal.MappingSource;
 import org.cytoscape.idmapper.internal.MappingUtil;
 import org.cytoscape.idmapper.internal.Species;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -157,6 +158,9 @@ String new_column_name;
 		}
 		nodeTable = stMod.getTable("node:current");
 //		nodeTable = serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable();
+		CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		nodeTable = network.getDefaultNodeTable();
+		
 		if (nodeTable == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find node table");
 			return;
