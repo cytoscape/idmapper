@@ -37,6 +37,6 @@ public class CyActivator extends AbstractCyActivator {
         registerService(bc, mapColumnTaskFactory, MapColumnTaskFactory.class, mapColumnTaskFactoryProps);
         registerService(bc, mapColumnTaskFactory, TaskFactory.class, mapColumnTaskFactoryProps);
     }
-	String JSON_EXAMPLE = "{\"SUID\":1234}";
+	String JSON_EXAMPLE = "{ \"new column\": \"mappedIDs\" }";
 
 }

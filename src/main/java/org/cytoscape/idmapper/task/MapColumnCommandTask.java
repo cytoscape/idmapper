@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.idmapper.IdMapping;
 import org.cytoscape.idmapper.internal.BridgeDbIdMapper;
 import org.cytoscape.idmapper.internal.MappingSource;
@@ -29,37 +30,37 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListSingleSelection;
 
-
- class TableTunable {
-	CyTableManager tableManager;
-
-	@Tunable(description="ZTable", context="nogui", longDescription="Specifies a table by table name. If the prefix ```SUID:``` is used, the table corresponding the SUID will be returned.", exampleStringValue="galFiltered.sif default node")
-	public String ZTable;
-
-	public TableTunable(CyTableManager tableManager) {
-		this.tableManager = tableManager;
-	}
-
-	public String getTableString() {
-		return ZTable;
-	}
-
-	public CyTable getTable() { 
-		if (ZTable == null) return null;
-
-		if (ZTable.toLowerCase().startsWith("suid:")) {
-			String[] tokens = ZTable.split(":");
-			CyTable t = tableManager.getTable(Long.parseLong(tokens[1].trim()));
-			return t;
-		} else {
-			for (CyTable t: tableManager.getAllTables(true)) {
-				if (t.getTitle().equalsIgnoreCase(ZTable))
-					return t;
-			}
-		}
-		return null;
-	}
-}
+//
+// class TableTunable {
+//	CyTableManager tableManager;
+//
+//	@Tunable(description="Table", context="nogui", longDescription="Specifies a table by table name. If the prefix ```SUID:``` is used, the table corresponding the SUID will be returned.", exampleStringValue="galFiltered.sif default node")
+//	public String table;
+//
+//	public TableTunable(CyTableManager tableManager) {
+//		this.tableManager = tableManager;
+//	}
+//
+//	public String getTableString() {
+//		return table;
+//	}
+//
+//	public CyTable getTable() { 
+//		if (table == null) return null;
+//
+//		if (table.toLowerCase().startsWith("suid:")) {
+//			String[] tokens = table.split(":");
+//			CyTable t = tableManager.getTable(Long.parseLong(tokens[1].trim()));
+//			return t;
+//		} else {
+//			for (CyTable t: tableManager.getAllTables(true)) {
+//				if (t.getTitle().equalsIgnoreCase(table))
+//					return t;
+//			}
+//		}
+//		return null;
+//	}
+//}
 
 /*
  * #%L
@@ -94,48 +95,61 @@ public final class MapColumnCommandTask extends AbstractTask implements Observab
 		return "Map Column";
 	}
 	@ContainsTunables
-	public TableTunable tableTunable = null;
+//	public TableTunable tableTunable = null;
 
 
-	@Tunable(description="aSpecies", gravity=0.0, 	         context="nogui",
-longDescription="The combined common and latin names of the species to which the identifiers apply",exampleStringValue = "Homo Sapiens")
-	public ListSingleSelection<String> aSpecies  =  new ListSingleSelection<String>(Species.fullNames());
+	@Tunable(description="Species", gravity=0.0, 	         context="nogui",
+longDescription="The combined common or latin name of the species to which the identifiers apply",exampleStringValue = "Yeast")
+	public ListSingleSelection<String> species  =  new ListSingleSelection<String>(Species.fullNames());
 
 
 	@Tunable(description="Column name",
-	         longDescription="Specifies the database describing the existing identifiers",
-			exampleStringValue="ENSEMBL",
+	         longDescription="Specifies the column nmae where the source identifiers are located",
+			exampleStringValue="name",
 	         context="nogui",
 	         required=true)
+	public ListSingleSelection<String> source_column = new ListSingleSelection<String>();
+
+	@Tunable(description="Source Database",
+    longDescription="Specifies the database describing the existing identifiers",
+	exampleStringValue="ENSEMBL",
+    context="nogui",
+    required=true)
+
 	public ListSingleSelection<String> source_selection = new ListSingleSelection<String>();
 	
 	@Tunable(description="New Column Name",
 	         longDescription="Specifies the database identifiers to be looked up",
 	    	         context="nogui",
-	         exampleStringValue="Entrez",
+	         exampleStringValue="SGD",
 	         required=true)
 	public ListSingleSelection<String> target_selection = new ListSingleSelection<String>();
 
 	@Tunable(description="Force single ", gravity=3.0, longDescription="When multiple identifiers can be mapped from a single term, this forces a singular result", exampleStringValue="false")
-	public boolean ZZonly_use_one = true;
+	public boolean only_use_one = true;
 
 	CyColumn column = null;
-
+	CyServiceRegistrar serviceRegistrar;
+	
 	MapColumnCommandTask(CyServiceRegistrar registrar) {
 		tableManager = registrar.getService(CyTableManager.class);
 		cyJSONUtil = registrar.getService(CyJSONUtil.class);
-		tableTunable = new TableTunable(tableManager);
+//		tableTunable = new TableTunable(tableManager);
+		serviceRegistrar = registrar;
 	}
-boolean VERBOSE = false;
+boolean VERBOSE = true;
 private Set<String> matched_ids;
 private Set<String> unmatched_ids;
 private Map<String, IdMapping> res;
+CyTable nodeTable;
+String new_column_name;
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-		CyTable table = tableTunable.getTable();
-		if (table == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+tableTunable.getTableString()+"'");
+		StringToModel stMod = serviceRegistrar.getService(StringToModel.class);
+		nodeTable = stMod.getTable(null);
+		if (nodeTable == null) {
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find node table");
 			return;
 		}
 
@@ -150,16 +164,16 @@ private Map<String, IdMapping> res;
 		}
 
 		String rawTarget = target_selection.getSelectedValue();
-		String rawSource = source_selection.getSelectedValue();
-	column = table.getColumn(rawSource);
+		String rawSource = source_column.getSelectedValue();
+	column = nodeTable.getColumn(rawSource);
 		if (column == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Can't find column "+rawSource+" in table "+table.toString());
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Can't find column "+rawSource+" in table "+nodeTable.toString());
 			return;
 		}
-		column.setName(target_selection.getSelectedValue());
+//		column.setName(target_selection.getSelectedValue());
 
-			String speciesVal = aSpecies.getSelectedValue();
-			final MappingSource source = MappingSource.nameLookup(rawSource);
+			String speciesVal = species.getSelectedValue();
+			final MappingSource source = MappingSource.nameLookup("" + source_selection.getSelectedValue());
 			if (column.getType() ==  Double.class || column.getType() ==  Integer.class || column.getType() ==  Boolean.class)
 			{
 				if (VERBOSE) System.out.println("Can't map a numeric column as identifiers");		// tell the user?
@@ -223,7 +237,7 @@ private Map<String, IdMapping> res;
 				}
 				System.out.println();
 			}
-			String new_column_name = saveTarget.descriptor();
+			new_column_name = saveTarget.descriptor();
 			new_column_name = MappingUtil.makeNewColumnName(new_column_name,
 					source.descriptor(), new_column_name, column);
 
@@ -257,17 +271,17 @@ private Map<String, IdMapping> res;
 			boolean many_to_one = false;
 			if (matched_ids.size() > 0) {
 				boolean all_single = false;
-				if (ZZonly_use_one) 
-					table.createColumn(new_column_name, String.class, false);	//index, 
+				if (only_use_one) 
+					nodeTable.createColumn(new_column_name, String.class, false);	//index, 
 				else {  
-					all_single = MappingUtil.isAllSingle(source_is_list, res, column, table);
+					all_single = MappingUtil.isAllSingle(source_is_list, res, column, nodeTable);
 					if (all_single) 
-						table.createColumn(new_column_name, String.class, false);		//index, 
+						nodeTable.createColumn(new_column_name, String.class, false);		//index, 
 					 else 
-						table.createListColumn(new_column_name, String.class, false);	//index, 
+						 nodeTable.createListColumn(new_column_name, String.class, false);	//index, 
 				}
-				many_to_one = MappingUtil.fillNewColumn(source_is_list, res, table, column, new_column_name,
-						ZZonly_use_one || all_single);
+				many_to_one = MappingUtil.fillNewColumn(source_is_list, res, nodeTable, column, new_column_name,
+						only_use_one || all_single);
 
 //				moveLastColumnTo(table, index+1);
 //				System.out.println("moveLastColumnTo " + (index+1));
@@ -275,7 +289,7 @@ private Map<String, IdMapping> res;
 			String targ = saveTarget.descriptor();
 			String src = source.descriptor();
 			String msg = MappingUtil.createMsg(new_column_name, targ, src, ids, matched_ids, all_unique, non_unique,
-					unique, min, max, many_to_one, ZZonly_use_one);
+					unique, min, max, many_to_one, only_use_one);
 
 //			taskMonitor.showMessage(TaskMonitor.Level.INFO, msg);
 
@@ -288,13 +302,15 @@ private Map<String, IdMapping> res;
 		if (type.equals(String.class)) {
 			if (column == null)
 				return (R)"Unable to map column";
-			String res = "Mapped column "+source_selection.getSelectedValue()+" in table "+tableTunable.getTable()+" to "+target_selection.getSelectedValue();
+			String res = "Mapped column "+source_selection.getSelectedValue()+" in table "+nodeTable+" to "+target_selection.getSelectedValue();
 			return (R)res;
 		} else if (type.equals(JSONResult.class)) {
+		
 			JSONResult res = () -> {if (column == null)
 				return "{}";
 			else {
-				return cyJSONUtil.toJson(column, true, false);
+				System.out.println("column = " + cyJSONUtil.toJson(column, true, false));
+				return "{ \"new column\" : \"" + new_column_name + " \" }" ;  // cyJSONUtil.toJson(column, true, false);
 			}};
 			return (R)res;
 		}
