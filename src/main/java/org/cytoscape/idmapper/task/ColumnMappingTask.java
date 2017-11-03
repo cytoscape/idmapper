@@ -122,7 +122,6 @@ private void resetTarget(MappingSource src)
 	target_selection.setPossibleValues(filtered);
 	target_selection.setSelectedValue(saveTarget.getMenuString());
 
-//	System.out.println("---------------\n" );
 }
 
 	//------------------------------------------------------------------------	
@@ -135,31 +134,11 @@ private void resetTarget(MappingSource src)
 	// look at AbstractCyNetworkReader:98 for an example of Tunables with methods
 	@Tunable(description="Species", gravity=0.0, longDescription="The latin name of the species to which the identifiers apply",exampleStringValue = "Homo Sapiens")
 	public ListSingleSelection<String> speciesList  =  new ListSingleSelection<String>(Species.fullNames());
-//	public ListSingleSelection<String> getspecies_selection()
-//	{
-//		if (speciesList == null)
-//			speciesList =  new ListSingleSelection<String>(Species.fullNames());
-//		return speciesList;
-//	}
-//
-//	public void setspecies_selection(ListSingleSelection<String> list)
-//	{
-//		String cur = speciesList.getSelectedValue();
-////		System.out.println("setSpecies_selection " + cur);
-//		int idx = cur.indexOf(" (");
-//		if (idx >0)
-//			cur = cur.substring(0, idx);
-//		saveSpecies = Species.lookup(cur);
-//		System.out.println("Species saved as " + saveSpecies.toString());
-//		resetInterfaceToSpecies();
-//	}
 	//------------------------------------------------------------------------
 	@Tunable(description="Map from", gravity=1.0, longDescription="Specifies the database describing the existing identifiers", exampleStringValue="ENSEMBL")
-//	public ListSingleSelection<String> source_selection = new ListSingleSelection<String>(MappingSource.allStrings());
 	public ListSingleSelection<String> source_selection = new ListSingleSelection<String>();
 
 	@Tunable(description="To", gravity=2.0, longDescription="Specifies the database identifiers to be looked up", exampleStringValue="Entrez")
-//	public ListSingleSelection<String> target_selection	= new ListSingleSelection<String>(MappingSource.allStrings());
 	public ListSingleSelection<String> target_selection	= new ListSingleSelection<String>();
 
 	@Tunable(description="Force single ", gravity=3.0, longDescription="When multiple identifiers can be mapped from a single term, this forces a singular result", exampleStringValue="false")
@@ -180,14 +159,11 @@ private void resetTarget(MappingSource src)
 			if (VERBOSE) System.out.println("Can't map a numeric column as identifiers");		// tell the user?
 			return;
 		}
-//		System.out.println("raw str: " + rawTarget);
+		if (VERBOSE) System.out.println("raw str: " + rawTarget);
 		saveTarget = MappingSource.nameLookup(rawTarget);
-//		System.out.println("reading target as " + saveTarget);
+		if (VERBOSE) System.out.println("reading target as " + saveTarget);
 		saveSpecies = Species.lookup(species);
 		if (VERBOSE) System.out.println("saving species as " + saveSpecies.name());
-//		System.out.println("saving source as " + source.name());
-//		System.out.println("saving target as " + saveTarget.name());
-//		System.out.println("--------------------------");
 		boolean source_is_list = false;
 		if (column.getType() == List.class)
 			source_is_list = true;

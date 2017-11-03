@@ -10,6 +10,7 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
 import org.cytoscape.idmapper.IdMapping;
 import org.cytoscape.idmapper.internal.BridgeDbIdMapper;
@@ -112,7 +113,7 @@ longDescription="The combined common or latin name of the species to which the i
 
 	@Tunable(description="Source Database",
     longDescription="Specifies the database describing the existing identifiers",
-	exampleStringValue="ENSEMBL",
+	exampleStringValue="Ensembl",
     context="nogui",
     required=true)
 
@@ -125,7 +126,7 @@ longDescription="The combined common or latin name of the species to which the i
 	         required=true)
 	public ListSingleSelection<String> target_selection = new ListSingleSelection<String>();
 
-	@Tunable(description="Force single ", gravity=3.0, longDescription="When multiple identifiers can be mapped from a single term, this forces a singular result", exampleStringValue="false")
+	@Tunable(description="Force single ", gravity=3.0, longDescription="When multiple identifiers can be mapped from a single term, this forces a singular result", exampleStringValue="true")
 	public boolean only_use_one = true;
 
 	CyColumn column = null;
@@ -136,6 +137,7 @@ longDescription="The combined common or latin name of the species to which the i
 		cyJSONUtil = registrar.getService(CyJSONUtil.class);
 //		tableTunable = new TableTunable(tableManager);
 		serviceRegistrar = registrar;
+		System.out.println("create MapColumnCommandTask");		
 	}
 boolean VERBOSE = true;
 private Set<String> matched_ids;
@@ -146,8 +148,15 @@ String new_column_name;
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
+		System.out.println("run MapColumnCommandTask");		
 		StringToModel stMod = serviceRegistrar.getService(StringToModel.class);
-		nodeTable = stMod.getTable(null);
+		if (stMod == null) 
+		{
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to StringToModel bundle");
+			return;
+		}
+		nodeTable = stMod.getTable("node:current");
+//		nodeTable = serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable();
 		if (nodeTable == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find node table");
 			return;
@@ -165,7 +174,7 @@ String new_column_name;
 
 		String rawTarget = target_selection.getSelectedValue();
 		String rawSource = source_column.getSelectedValue();
-	column = nodeTable.getColumn(rawSource);
+		column = nodeTable.getColumn(rawSource);
 		if (column == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Can't find column "+rawSource+" in table "+nodeTable.toString());
 			return;

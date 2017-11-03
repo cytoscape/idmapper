@@ -43,7 +43,6 @@ public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory imp
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		// TODO Auto-generated method stub
 		return new TaskIterator(new MapColumnCommandTask(serviceRegistrar));
 	}
 
