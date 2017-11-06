@@ -160,7 +160,7 @@ String new_column_name;
 //		nodeTable = serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable();
 		CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		nodeTable = network.getDefaultNodeTable();
-		
+		// TODO:  taskMonitor.showMessage flashes the text in bottom left corner, but its gone for user can read it
 		if (nodeTable == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find node table");
 			return;
