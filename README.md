@@ -12,12 +12,12 @@ Once the dialog is confirmed, a new column will be added to the Node Table conta
 
 This version adds support for the command dialog and CyREST access.
 
-`{  
+'{  
   "columnName": "name",    
   "forceSingle": "true",    
   "mapFrom": "HGNC",  
   "mapTo": "Ensembl",    
   "network": "A",    
-  "table": "edge",  
+  "table": "default node",    
   "species": "Human (Homo sapiens)"  
-}`
+}'  
