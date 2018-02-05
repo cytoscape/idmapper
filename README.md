@@ -11,3 +11,13 @@ A dialog is shown to gather the information about the species, and which columns
 Once the dialog is confirmed, a new column will be added to the Node Table containing the mapped identifiers.
 
 This version adds support for the command dialog and CyREST access.
+
+`{  
+  "columnName": "name",    
+  "forceSingle": "true",    
+  "mapFrom": "HGNC",  
+  "mapTo": "Ensembl",    
+  "network": "A",    
+  "table": "edge",  
+  "species": "Human (Homo sapiens)"  
+}`
