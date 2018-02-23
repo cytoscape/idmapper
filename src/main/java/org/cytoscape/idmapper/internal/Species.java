@@ -10,7 +10,7 @@ import java.util.Map;
 public enum Species {
 	   Human("Human", "Homo sapiens") ,
 	   Mouse("Mouse", "Mus musculus") ,
-	   Rat("Rat", "Rattus norvegicus") ,
+	   Rat("DRat", "Rattus norvegicus") ,
 	   Frog("Frog", "Xenopus tropicalis") ,
 	   Zebra_fish("Zebra fish", "Danio rerio") ,
 	   Fruit_fly("Fruit fly", "Drosophila melanogaster") ,
@@ -54,11 +54,11 @@ public enum Species {
 	//--------------------------------------------------------------------
 	public static Species lookup(String input)
 	{
-		if (input == null || input.length() == 0 ) return null;
+		if (input == null || input.trim().length() == 0 ) return null;
 		int idx = input.indexOf(" (");
 		if (idx > 0) input = input.substring(0,idx);
 		for (Species s : values())
-			if (s.name.equals(input) || s.latin.equals(input)) 	
+			if (s.name.compareToIgnoreCase(input) == 0 || s.latin.compareToIgnoreCase(input) == 0)
 				return s;
 		return null;
 	}
@@ -71,6 +71,7 @@ public enum Species {
 			names[i++] = spec.name;
 		return names;		
 	}
+	
 	public static String[] latinNames()
 	{
 		String[] latinnames = new String[Species.values().length];
@@ -79,6 +80,7 @@ public enum Species {
 			latinnames[i++] = spec.latin;
 		return latinnames;		
 	}
+	
 	public static String[] fullNameArray()
 	{
 		String[] fullNames = new String[Species.values().length];
@@ -87,6 +89,7 @@ public enum Species {
 			fullNames[i++] = spec.fullname();
 		return fullNames;		
 	}
+	
 	public static List<String> fullNames()
 	{
 		List<String> fullNames = new ArrayList<String>();
@@ -94,7 +97,6 @@ public enum Species {
 			fullNames.add(spec.fullname());
 		return fullNames;		
 	}
-	
 
 	public boolean equals(String other)
 	{
@@ -102,6 +104,7 @@ public enum Species {
 		if ( latin.equals(other)) return true;
 		return false;
 	}
+	
 	public boolean match(Species other)
 	{
 		if (other == null || other.name().trim().length() == 0) return true;	
