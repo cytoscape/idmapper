@@ -10,7 +10,7 @@ import java.util.Map;
 public enum Species {
 	   Human("Human", "Homo sapiens") ,
 	   Mouse("Mouse", "Mus musculus") ,
-	   Rat("DRat", "Rattus norvegicus") ,
+	   Rat("Rat", "Rattus norvegicus") ,
 	   Frog("Frog", "Xenopus tropicalis") ,
 	   Zebra_fish("Zebra fish", "Danio rerio") ,
 	   Fruit_fly("Fruit fly", "Drosophila melanogaster") ,
