@@ -34,7 +34,7 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 
 
 //	public static final boolean DEBUG = true;
-	public static final boolean VERBOSE = true;
+	public static final boolean VERBOSE = false;
 	private static Species saveSpecies = Species.Human;
 	private static MappingSource saveSource = MappingSource.Entrez_Gene;
 	private static MappingSource saveTarget = MappingSource.Entrez_Gene;
@@ -49,8 +49,8 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 			Species.buildMaps();
 			speciesList.setPossibleValues(Species.fullNames());
 			speciesList.addListener(this);
-			source_selection.addListener(this);
-			target_selection.addListener(this);
+			mapFrom.addListener(this);
+			mapTo.addListener(this);
 			resetSpecies();
 		}
 	}
@@ -58,8 +58,8 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 	{
 		String name = null;
 		if (source == speciesList) name = "speciesList";
-		if (source == source_selection) name = "source_selection";
-		if (source == target_selection) name = "target_selection";
+		if (source == mapFrom) name = "source_selection";
+		if (source == mapTo) name = "target_selection";
 //		System.out.println("selectionChanged: at " + name);
 		if (source instanceof ListSingleSelection<?>)
 		{
@@ -71,8 +71,8 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 				if (VERBOSE) System.out.println("setting Species to: " + saveSpecies.fullname());
 				resetSpecies();
 			}
-			else if (src == source_selection)		resetSource();
-			else if (src == target_selection)
+			else if (src == mapFrom)		resetSource();
+			else if (src == mapTo)
 			{}			//	System.out.println("target is: " + target_selection.getSelectedValue());
 			else
 			System.err.println("selectionChanged error: " + source.toString());
@@ -89,19 +89,19 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 		
 		List<String> strs = MappingSource.filteredStrings(saveSpecies, null);
 		if (VERBOSE) System.out.println("filteredStrings: " + strs);
-		source_selection.setPossibleValues(strs);
+		mapFrom.setPossibleValues(strs);
 		
 		if (column != null)
 		{
 			final List<String> ids = column.getValues(String.class);
 			saveSource = MappingSource.guessSource(saveSpecies, ids);
-			source_selection.setSelectedValue(saveSource.getMenuString());
+			mapFrom.setSelectedValue(saveSource.getMenuString());
 			if (VERBOSE) System.out.println("\nguessed Source: " + saveSource.getMenuString());
 			resetSource();
 		}		
 	}
 	private void resetSource() {
-		String src = source_selection.getSelectedValue();
+		String src = mapFrom.getSelectedValue();
 		saveSource = MappingSource.nameLookup(src);
 		if (VERBOSE) System.out.println("resettingSource: " + src + ", " + saveSource.descriptor());
 //		source_selection.setSelectedValue(saveSource.getMenuString());
@@ -112,15 +112,15 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 private void resetTarget(MappingSource src)
 {
 	//	filter the targets to remove the source, and anything species-specific
-	saveTarget = MappingSource.nameLookup(target_selection.getSelectedValue());
-	if ((saveTarget == null || saveTarget == src) && target_selection.getPossibleValues().size() > 0)
-		saveTarget = MappingSource.nameLookup(target_selection.getPossibleValues().get(0));
+	saveTarget = MappingSource.nameLookup(mapTo.getSelectedValue());
+	if ((saveTarget == null || saveTarget == src) && mapTo.getPossibleValues().size() > 0)
+		saveTarget = MappingSource.nameLookup(mapTo.getPossibleValues().get(0));
 	if (saveTarget == null) 
 		saveTarget = MappingSource.ENSEMBL;
 	//	System.out.println("resetTarget: " + saveTarget.descriptor());
 	List<String> filtered = MappingSource.filteredStrings(saveSpecies, src);
-	target_selection.setPossibleValues(filtered);
-	target_selection.setSelectedValue(saveTarget.getMenuString());
+	mapTo.setPossibleValues(filtered);
+	mapTo.setSelectedValue(saveTarget.getMenuString());
 
 }
 
@@ -136,13 +136,13 @@ private void resetTarget(MappingSource src)
 	public ListSingleSelection<String> speciesList  =  new ListSingleSelection<String>(Species.fullNames());
 	//------------------------------------------------------------------------
 	@Tunable(description="Map from", gravity=1.0, longDescription="Specifies the database describing the existing identifiers", exampleStringValue="ENSEMBL")
-	public ListSingleSelection<String> source_selection = new ListSingleSelection<String>();
+	public ListSingleSelection<String> mapFrom = new ListSingleSelection<String>();
 
 	@Tunable(description="To", gravity=2.0, longDescription="Specifies the database identifiers to be looked up", exampleStringValue="Entrez")
-	public ListSingleSelection<String> target_selection	= new ListSingleSelection<String>();
+	public ListSingleSelection<String> mapTo	= new ListSingleSelection<String>();
 
 	@Tunable(description="Force single ", gravity=3.0, longDescription="When multiple identifiers can be mapped from a single term, this forces a singular result", exampleStringValue="false")
-	public boolean only_use_one = true;
+	public boolean forceSingle = true;
 	
 	//------------------------------------------------------------------------
 	public String new_column_name = "";
@@ -151,8 +151,8 @@ private void resetTarget(MappingSource src)
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
 		String species = speciesList.getSelectedValue();
-		String rawTarget = target_selection.getSelectedValue();
-		String rawSource = source_selection.getSelectedValue();
+		String rawTarget = mapTo.getSelectedValue();
+		String rawSource = mapFrom.getSelectedValue();
 		final MappingSource source = MappingSource.nameLookup(rawSource);
 		if (column.getType() ==  Double.class || column.getType() ==  Integer.class || column.getType() ==  Boolean.class)
 		{
@@ -251,7 +251,7 @@ private void resetTarget(MappingSource src)
 		boolean many_to_one = false;
 		if (matched_ids.size() > 0) {
 			boolean all_single = false;
-			if (only_use_one) 
+			if (forceSingle) 
 				table.createColumn(new_column_name, String.class, false);	//index, 
 			else {  
 				all_single = MappingUtil.isAllSingle(source_is_list, res, column, table);
@@ -261,7 +261,7 @@ private void resetTarget(MappingSource src)
 					table.createListColumn(new_column_name, String.class, false);	//index, 
 			}
 			many_to_one = MappingUtil.fillNewColumn(source_is_list, res, table, column, new_column_name,
-					only_use_one || all_single);
+					forceSingle || all_single);
 
 //			moveLastColumnTo(table, index+1);
 //			System.out.println("moveLastColumnTo " + (index+1));
@@ -269,7 +269,7 @@ private void resetTarget(MappingSource src)
 		String targ = saveTarget.descriptor();
 		String src = source.descriptor();
 		final String msg = MappingUtil.createMsg(new_column_name, targ, src, ids, matched_ids, all_unique, non_unique,
-				unique, min, max, many_to_one, only_use_one);
+				unique, min, max, many_to_one, forceSingle);
 
 //		taskMonitor.showMessage(TaskMonitor.Level.INFO, msg);
 

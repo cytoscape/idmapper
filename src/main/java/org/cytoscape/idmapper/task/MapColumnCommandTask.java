@@ -100,36 +100,39 @@ public final class MapColumnCommandTask extends AbstractTask implements Observab
 //	public TableTunable tableTunable = null;
 
 
-	@Tunable(description="Species", gravity=0.0, 	         context="nogui",
-longDescription="The combined common or latin name of the species to which the identifiers apply",exampleStringValue = "Yeast")
+	@Tunable(description="Species", gravity=0.0, 	         
+		context="nogui", required=true,
+		longDescription="The combined common or latin name of the species to which the identifiers apply",
+		exampleStringValue = "Yeast")
 	public ListSingleSelection<String> species  =  new ListSingleSelection<String>(Species.fullNames());
-
-
+	
 	@Tunable(description="Column name",
 	         longDescription="Specifies the column nmae where the source identifiers are located",
-			exampleStringValue="name",
-	         context="nogui",
-	         required=true)
-	public ListSingleSelection<String> source_column = new ListSingleSelection<String>();
+			exampleStringValue="name", context="nogui", required=true)
+	public ListSingleSelection<String> columnName = new ListSingleSelection<String>();
 
 	@Tunable(description="Source Database",
-    longDescription="Specifies the database describing the existing identifiers",
-	exampleStringValue="Ensembl",
-    context="nogui",
-    required=true)
+			longDescription="Specifies the database describing the existing identifiers",
+			exampleStringValue="Ensembl", context="nogui", required=true)
+	public ListSingleSelection<String> mapFrom = new ListSingleSelection<String>();
 
-	public ListSingleSelection<String> source_selection = new ListSingleSelection<String>();
-	
 	@Tunable(description="New Column Name",
 	         longDescription="Specifies the database identifiers to be looked up",
-	    	         context="nogui",
-	         exampleStringValue="SGD",
-	         required=true)
-	public ListSingleSelection<String> target_selection = new ListSingleSelection<String>();
+	    	         context="nogui", exampleStringValue="SGD", required=true)
+	public ListSingleSelection<String> mapTo = new ListSingleSelection<String>();
 
 	@Tunable(description="Force single ", gravity=3.0, longDescription="When multiple identifiers can be mapped from a single term, this forces a singular result", exampleStringValue="true")
-	public boolean only_use_one = true;
+	public boolean forceSingle = true;
 
+	@Tunable(description="Network ", context="nogui", longDescription="Which network is used in the mapping", exampleStringValue="current")
+	public String networkName = "current";
+	
+	@Tunable(description="Table ", context="nogui", longDescription="Which table is used as the source of the identifiers", exampleStringValue="default node")
+	public String table  = "node:current";
+	
+	
+	
+	
 	CyColumn column = null;
 	CyServiceRegistrar serviceRegistrar;
 	
@@ -138,9 +141,9 @@ longDescription="The combined common or latin name of the species to which the i
 		cyJSONUtil = registrar.getService(CyJSONUtil.class);
 //		tableTunable = new TableTunable(tableManager);
 		serviceRegistrar = registrar;
-		System.out.println("create MapColumnCommandTask");		
+		if (VERBOSE) System.out.println("create MapColumnCommandTask");		
 	}
-boolean VERBOSE = true;
+boolean VERBOSE = false;
 private Set<String> matched_ids;
 private Set<String> unmatched_ids;
 private Map<String, IdMapping> res;
@@ -149,35 +152,41 @@ String new_column_name;
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-		System.out.println("run MapColumnCommandTask");		
+		if (VERBOSE) System.out.println("run MapColumnCommandTask");		
 		StringToModel stMod = serviceRegistrar.getService(StringToModel.class);
 		if (stMod == null) 
 		{
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to StringToModel bundle");
 			return;
 		}
-		nodeTable = stMod.getTable("node:current");
-//		nodeTable = serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable();
-		CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
-		nodeTable = network.getDefaultNodeTable();
-		// TODO:  taskMonitor.showMessage flashes the text in bottom left corner, but its gone for user can read it
+		CyNetwork network = stMod.getNetwork(networkName);
+		if (network == null)
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		
+		nodeTable = stMod.getTable(table);			//"node:current"
 		if (nodeTable == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find node table");
-			return;
+	//		nodeTable = serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable();
+			nodeTable = network.getDefaultNodeTable();
+			// TODO:  taskMonitor.showMessage flashes the text in bottom left corner, but its gone for user can read it
+			if (nodeTable == null) {
+				taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find node table");
+				return;
+			}
 		}
-
-		if (source_selection == null) {
+		
+		
+		if (mapFrom == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Column name must be specified");
 			return;
 		}
 
-		if (target_selection == null) {
+		if (mapTo == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "New column name must be specified");
 			return;
 		}
 
-		String rawTarget = target_selection.getSelectedValue();
-		String rawSource = source_column.getSelectedValue();
+		String rawTarget = mapTo.getSelectedValue();
+		String rawSource = columnName.getSelectedValue();
 		column = nodeTable.getColumn(rawSource);
 		if (column == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Can't find column "+rawSource+" in table "+nodeTable.toString());
@@ -186,7 +195,7 @@ String new_column_name;
 //		column.setName(target_selection.getSelectedValue());
 
 			String speciesVal = species.getSelectedValue();
-			final MappingSource source = MappingSource.nameLookup("" + source_selection.getSelectedValue());
+			final MappingSource source = MappingSource.nameLookup("" + mapFrom.getSelectedValue());
 			if (column.getType() ==  Double.class || column.getType() ==  Integer.class || column.getType() ==  Boolean.class)
 			{
 				if (VERBOSE) System.out.println("Can't map a numeric column as identifiers");		// tell the user?
@@ -284,7 +293,7 @@ String new_column_name;
 			boolean many_to_one = false;
 			if (matched_ids.size() > 0) {
 				boolean all_single = false;
-				if (only_use_one) 
+				if (forceSingle) 
 					nodeTable.createColumn(new_column_name, String.class, false);	//index, 
 				else {  
 					all_single = MappingUtil.isAllSingle(source_is_list, res, column, nodeTable);
@@ -294,7 +303,7 @@ String new_column_name;
 						 nodeTable.createListColumn(new_column_name, String.class, false);	//index, 
 				}
 				many_to_one = MappingUtil.fillNewColumn(source_is_list, res, nodeTable, column, new_column_name,
-						only_use_one || all_single);
+						forceSingle || all_single);
 
 //				moveLastColumnTo(table, index+1);
 //				System.out.println("moveLastColumnTo " + (index+1));
@@ -302,7 +311,7 @@ String new_column_name;
 			String targ = saveTarget.descriptor();
 			String src = source.descriptor();
 			String msg = MappingUtil.createMsg(new_column_name, targ, src, ids, matched_ids, all_unique, non_unique,
-					unique, min, max, many_to_one, only_use_one);
+					unique, min, max, many_to_one, forceSingle);
 
 //			taskMonitor.showMessage(TaskMonitor.Level.INFO, msg);
 
@@ -315,14 +324,14 @@ String new_column_name;
 		if (type.equals(String.class)) {
 			if (column == null)
 				return (R)"Unable to map column";
-			String res = "Mapped column "+source_selection.getSelectedValue()+" in table "+nodeTable+" to "+target_selection.getSelectedValue();
+			String res = "Mapped column "+mapFrom.getSelectedValue()+" in table "+nodeTable+" to "+mapTo.getSelectedValue();
 			return (R)res;
 		} else if (type.equals(JSONResult.class)) {
 		
 			JSONResult res = () -> {if (column == null)
 				return "{}";
 			else {
-				System.out.println("column = " + cyJSONUtil.toJson(column, true, false));
+				if (VERBOSE) System.out.println("column = " + new_column_name);   // cyJSONUtil.toJson(column, true, false));
 				return "{ \"new column\" : \"" + new_column_name + " \" }" ;  // cyJSONUtil.toJson(column, true, false);
 			}};
 			return (R)res;
