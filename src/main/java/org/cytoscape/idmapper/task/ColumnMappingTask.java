@@ -103,7 +103,7 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 	private void resetSource() {
 		String src = source_selection.getSelectedValue();
 		saveSource = MappingSource.nameLookup(src);
-		if (VERBOSE) System.out.println("resetSource: " + src + ", " + saveSource.descriptor());
+		if (VERBOSE) System.out.println("resettingSource: " + src + ", " + saveSource.descriptor());
 //		source_selection.setSelectedValue(saveSource.getMenuString());
 		resetTarget(saveSource);
 	}

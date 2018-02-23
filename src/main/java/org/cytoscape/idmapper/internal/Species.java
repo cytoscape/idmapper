@@ -54,13 +54,13 @@ public enum Species {
 	//--------------------------------------------------------------------
 	public static Species lookup(String input)
 	{
-		if (input == null || input.length() == 0 ) return Human;
+		if (input == null || input.length() == 0 ) return null;
 		int idx = input.indexOf(" (");
 		if (idx > 0) input = input.substring(0,idx);
 		for (Species s : values())
 			if (s.name.equals(input) || s.latin.equals(input)) 	
 				return s;
-		return Human;
+		return null;
 	}
 	//--------------------------------------------------------------------
 	public static String[] commonNames()
@@ -106,7 +106,6 @@ public enum Species {
 	{
 		if (other == null || other.name().trim().length() == 0) return true;	
 //		System.out.print(" " + name + " - " + other.name);
-		if (name.equals(other.name)) return true;
-		return false;
+		return (name.equals(other.name));
 	}
 }

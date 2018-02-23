@@ -42,8 +42,8 @@ public enum MappingSource {
 	//----------------------------------------------------------------------------
 	public String descriptor()	{ return descriptor;	}
 	public String system()		{ return system;	}
-	public String species()		{ return species.common();	}
-	public Pattern pattern()	{ return pattern;	}
+	public String species()		{ return species == null ? "" : species.common();	}
+	public Pattern pattern()		{ return pattern;	}
 	//----------------------------------------------------------------------------
 	public static MappingSource systemLookup(String sys)
 	{
@@ -65,7 +65,10 @@ public enum MappingSource {
 
 	public boolean matchSpecies(Species inSpecies)	
 	{
-		return inSpecies == null || inSpecies.match(species);	
+		boolean isMatch =  species == null || inSpecies == null || inSpecies.match(species);	
+		if (VERBOSE) System.out.println("MATCHING: " + inSpecies.common() + " TO " + descriptor + ": " + (isMatch ? "TRUE" : "FALSE"));
+			
+		return isMatch;
 	}
 	//----------------------------------------------------------------------------
 //	public static String[] allStrings() {
@@ -88,6 +91,7 @@ public enum MappingSource {
 	
 	// get the list of sources that are available for this species
 	public static List<String> filteredStrings(Species inSpecies, MappingSource inSource) {
+		if (VERBOSE) System.out.println("+========== filteredStrings called: " + inSpecies.common() + " _ " + inSource);
 		int n = values().length;
 		List<String> matchingSources = new ArrayList<String>();
 		String srcName = inSource == null ? "" : inSource.name();
@@ -104,7 +108,8 @@ public enum MappingSource {
 		if (inSpecies==Species.Yeast )
 			matchingSources.add(MappingSource.ENSEMBL.getMenuString());
 			
-	return matchingSources;	
+		if (VERBOSE) System.out.println("Matches: " + matchingSources);
+		return matchingSources;	
 	}
 	
 	public String getMenuString() {
@@ -115,11 +120,12 @@ public enum MappingSource {
 	private boolean patternMatch(String id) 
 	{		
 		if (pattern == null)				return false;
+		if (id == null)					return true;
 		if (pattern.matcher(id) == null)	return false;
 		return pattern.matcher(id).matches();	
 	}
 
-	private static boolean VERBOSE = false;
+	private static boolean VERBOSE = true;
 
 	public static MappingSource guessSource(Species inSpecies, List<String> names) {
 
