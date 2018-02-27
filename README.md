@@ -1,4 +1,4 @@
-Copy the jar from here to ~/Applications/Cytoscape_v3.6.0/apps
+Copy "idmapper-3.6.1.jar" from here to ~/Applications/Cytoscape_v3.6.0/apps
 
 #idmapper
 
