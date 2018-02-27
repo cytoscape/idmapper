@@ -1,3 +1,5 @@
+Copy the jar from here to ~/Applications/Cytoscape_v3.6.0/apps
+
 #idmapper
 
 BridgeDB based Identifier mapping
