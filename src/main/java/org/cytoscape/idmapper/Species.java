@@ -1,4 +1,4 @@
-package org.cytoscape.idmapper.internal;
+package org.cytoscape.idmapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,7 +58,7 @@ public enum Species {
 		int idx = input.indexOf(" (");
 		if (idx > 0) input = input.substring(0,idx);
 		for (Species s : values())
-			if (s.name.compareToIgnoreCase(input) == 0 || s.latin.compareToIgnoreCase(input) == 0)
+			if (s.toString().compareToIgnoreCase(input) == 0 || s.name.compareToIgnoreCase(input) == 0 || s.latin.compareToIgnoreCase(input) == 0)
 				return s;
 		return null;
 	}
@@ -108,7 +108,11 @@ public enum Species {
 	public boolean match(Species other)
 	{
 		if (other == null || other.name().trim().length() == 0) return true;	
-//		System.out.print(" " + name + " - " + other.name);
 		return (name.equals(other.name));
 	}
+	public boolean isHuman()	{		return (match(Species.Human));	}
+	public boolean isFly()	{		return (match(Species.Fruit_fly));	}
+	public boolean isYeast()	{		return (match(Species.Yeast));	}
+	public boolean isWorm()	{		return (match(Species.Worm));	}
+	public boolean isMouse()	{		return (match(Species.Mouse));	}
 }

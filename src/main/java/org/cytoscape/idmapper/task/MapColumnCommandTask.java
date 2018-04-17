@@ -13,16 +13,16 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
 import org.cytoscape.idmapper.IdMapping;
+import org.cytoscape.idmapper.MappingSource;
+import org.cytoscape.idmapper.Species;
 import org.cytoscape.idmapper.internal.BridgeDbIdMapper;
-import org.cytoscape.idmapper.internal.MappingSource;
 import org.cytoscape.idmapper.internal.MappingUtil;
-import org.cytoscape.idmapper.internal.Species;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
@@ -32,45 +32,13 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListSingleSelection;
 
-//
-// class TableTunable {
-//	CyTableManager tableManager;
-//
-//	@Tunable(description="Table", context="nogui", longDescription="Specifies a table by table name. If the prefix ```SUID:``` is used, the table corresponding the SUID will be returned.", exampleStringValue="galFiltered.sif default node")
-//	public String table;
-//
-//	public TableTunable(CyTableManager tableManager) {
-//		this.tableManager = tableManager;
-//	}
-//
-//	public String getTableString() {
-//		return table;
-//	}
-//
-//	public CyTable getTable() { 
-//		if (table == null) return null;
-//
-//		if (table.toLowerCase().startsWith("suid:")) {
-//			String[] tokens = table.split(":");
-//			CyTable t = tableManager.getTable(Long.parseLong(tokens[1].trim()));
-//			return t;
-//		} else {
-//			for (CyTable t: tableManager.getAllTables(true)) {
-//				if (t.getTitle().equalsIgnoreCase(table))
-//					return t;
-//			}
-//		}
-//		return null;
-//	}
-//}
-
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape idmapper (org.cytoscape.idmapper.task)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -90,7 +58,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 
 public final class MapColumnCommandTask extends AbstractTask implements ObservableTask {
 	private final CyTableManager tableManager;
-	private final CyJSONUtil cyJSONUtil;
+//	private final CyJSONUtil cyJSONUtil;
 	
 	@ProvidesTitle
 	public String getTitle() {
@@ -138,17 +106,18 @@ public final class MapColumnCommandTask extends AbstractTask implements Observab
 	
 	MapColumnCommandTask(CyServiceRegistrar registrar) {
 		tableManager = registrar.getService(CyTableManager.class);
-		cyJSONUtil = registrar.getService(CyJSONUtil.class);
+//		cyJSONUtil = registrar.getService(CyJSONUtil.class);
 //		tableTunable = new TableTunable(tableManager);
 		serviceRegistrar = registrar;
 		if (VERBOSE) System.out.println("create MapColumnCommandTask");		
 	}
-boolean VERBOSE = false;
-private Set<String> matched_ids;
-private Set<String> unmatched_ids;
-private Map<String, IdMapping> res;
-CyTable nodeTable;
-String new_column_name;
+	private boolean VERBOSE = false;
+	private Set<String> matched_ids;
+	private Set<String> unmatched_ids;
+	private Map<String, IdMapping> res;
+	private CyTable networkTable;
+	private CyTable nodeTable;
+	private String new_column_name;
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
@@ -162,6 +131,9 @@ String new_column_name;
 		CyNetwork network = stMod.getNetwork(networkName);
 		if (network == null)
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		networkTable = stMod.getTable("defaultNetwork");
+			
+		
 		
 		nodeTable = stMod.getTable(table);			//"node:current"
 		if (nodeTable == null) {
@@ -193,8 +165,21 @@ String new_column_name;
 			return;
 		}
 //		column.setName(target_selection.getSelectedValue());
-
-			String speciesVal = species.getSelectedValue();
+		String speciesVal = null;
+		CyRow networkTableRow0 = null;
+		System.out.println("networkTable " + networkTable);
+		if (networkTable != null)
+		{
+			networkTableRow0 = networkTable.getRow(0);
+			networkTableRow0.set("idmapper.species", speciesVal);
+			System.out.println("write species as " + speciesVal);
+			
+			if (speciesVal != null)
+				species.setSelectedValue(speciesVal);
+		}
+		else taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "networkTable not found");
+		
+		speciesVal = species.getSelectedValue();
 			final MappingSource source = MappingSource.nameLookup("" + mapFrom.getSelectedValue());
 			if (column.getType() ==  Double.class || column.getType() ==  Integer.class || column.getType() ==  Boolean.class)
 			{
@@ -206,9 +191,8 @@ String new_column_name;
 //			System.out.println("reading target as " + saveTarget);
 			Species saveSpecies = Species.lookup(speciesVal);
 			if (VERBOSE) System.out.println("saving species as " + saveSpecies.name());
-//			System.out.println("saving source as " + source.name());
-//			System.out.println("saving target as " + saveTarget.name());
-//			System.out.println("--------------------------");
+
+
 			boolean source_is_list = false;
 			if (column.getType() == List.class)
 				source_is_list = true;

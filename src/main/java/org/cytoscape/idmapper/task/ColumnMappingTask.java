@@ -10,12 +10,15 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.idmapper.IdMapping;
+import org.cytoscape.idmapper.MappingSource;
+import org.cytoscape.idmapper.Species;
 import org.cytoscape.idmapper.internal.BridgeDbIdMapper;
-import org.cytoscape.idmapper.internal.MappingSource;
 import org.cytoscape.idmapper.internal.MappingUtil;
-import org.cytoscape.idmapper.internal.Species;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractTableColumnTask;
@@ -40,7 +43,13 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 	private static MappingSource saveTarget = MappingSource.Entrez_Gene;
 	private  final CyServiceRegistrar registrar;
 
-
+	class MappingSourceListener implements  ListChangeListener<MappingSource>
+	{
+		MappingSourceListener(ColumnMappingTask task)		{ }
+		@Override	public void listChanged(ListSelection<MappingSource> source) { mappingSourceChanged(source); }
+		@Override	public void selectionChanged(ListSelection<MappingSource> source) { mappingSourceChanged(source); }
+	}
+	
 	public  	ColumnMappingTask(final UndoSupport undoSupport, final CyColumn column, final CyServiceRegistrar reg) {
 		super(column);
 		registrar = reg;
@@ -49,18 +58,66 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 			Species.buildMaps();
 			speciesList.setPossibleValues(Species.fullNames());
 			speciesList.addListener(this);
-			mapFrom.addListener(this);
-			mapTo.addListener(this);
+			mapFrom.addListener(new MappingSourceListener(this));
+			mapTo.addListener(new MappingSourceListener(this));
 			resetSpecies();
+			boolean smartSticky = true;
+			if (smartSticky)
+			{
+				CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
+				CyTable networkTable = network.getDefaultNetworkTable();
+//				StringToModel stMod = registrar.getService(StringToModel.class);
+//				if (stMod == null) 
+//					System.err.println("Unable to fetch StringToModel bundle");
+//				else 
+//				{
+////					CyTable networkTable = stMod.getTable("Network Table");
+////					if (networkTable == null)
+////						System.err.println("Unable to fetch networkTable");
+//					CyTable networkTable = stMod.getTable("Network");
+//					if (networkTable == null)
+//						System.err.println("Still Unable to fetch networkTable");
+//					else
+//						{
+						List<CyRow> rows = networkTable.getAllRows();
+						System.out.println("rows: " + rows.size());
+						CyRow row = rows.get(0);
+						System.out.println("row: " + row);
+						String speciesStr = row.get("idmapper.species", String.class);
+						System.out.println("got as " + speciesStr);
+						if (speciesStr != null)
+						{
+							Species sp = Species.lookup(speciesStr);
+							System.out.println("read as " + sp);
+							if (sp != null)
+								saveSpecies = sp;
+						}
+//					}
+//				}
+				System.out.println("smartSticky saveSpecies read as " + saveSpecies);
+				speciesList.setSelectedValue(saveSpecies.fullname());
+			}		
 		}
 	}
-	public void selectionChanged(ListSelection<String> source) 
+	
+	public void saveSpecies()
+	{
+		System.out.print("saved Species as ");
+		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		CyTable networkTable = network.getDefaultNetworkTable();
+		if (networkTable != null )
+		{
+			CyColumn col = networkTable.getColumn("idmapper.species");
+			if (col == null)
+				networkTable.createColumn("idmapper.species", String.class, false); 
+			networkTable.getAllRows().get(0).set("idmapper.species", saveSpecies.toString());
+			System.out.println(saveSpecies.toString());
+		}		
+	}
+	public void speciesSelectionChanged(ListSelection<String> source) 
 	{
 		String name = null;
 		if (source == speciesList) name = "speciesList";
-		if (source == mapFrom) name = "source_selection";
-		if (source == mapTo) name = "target_selection";
-//		System.out.println("selectionChanged: at " + name);
 		if (source instanceof ListSingleSelection<?>)
 		{
 			ListSingleSelection<String> src = (ListSingleSelection<String>)source;
@@ -71,7 +128,19 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 				if (VERBOSE) System.out.println("setting Species to: " + saveSpecies.fullname());
 				resetSpecies();
 			}
-			else if (src == mapFrom)		resetSource();
+		}
+	}
+		
+	public void mappingSourceChanged(ListSelection<MappingSource> source) 
+	{
+		String name = null;
+		if (source == mapFrom) name = "source_selection";
+		if (source == mapTo) name = "target_selection";
+//		System.out.println("selectionChanged: at " + name);
+		if (source instanceof ListSingleSelection<?>)
+		{
+			ListSingleSelection<MappingSource> src = (ListSingleSelection<MappingSource>)source;
+			if (src == mapFrom)		resetSource();
 			else if (src == mapTo)
 			{}			//	System.out.println("target is: " + target_selection.getSelectedValue());
 			else
@@ -85,9 +154,11 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 		guessSource();
 	}	
 	
+	
+	
 	private void guessSource() {
 		
-		List<String> strs = MappingSource.filteredStrings(saveSpecies, null);
+		List<MappingSource> strs = MappingSource.filteredStrings(saveSpecies, null);
 		if (VERBOSE) System.out.println("filteredStrings: " + strs);
 		mapFrom.setPossibleValues(strs);
 		
@@ -95,16 +166,14 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 		{
 			final List<String> ids = column.getValues(String.class);
 			saveSource = MappingSource.guessSource(saveSpecies, ids);
-			mapFrom.setSelectedValue(saveSource.getMenuString());
+			mapFrom.setSelectedValue(saveSource);
 			if (VERBOSE) System.out.println("\nguessed Source: " + saveSource.getMenuString());
 			resetSource();
 		}		
 	}
 	private void resetSource() {
-		String src = mapFrom.getSelectedValue();
-		saveSource = MappingSource.nameLookup(src);
-		if (VERBOSE) System.out.println("resettingSource: " + src + ", " + saveSource.descriptor());
-//		source_selection.setSelectedValue(saveSource.getMenuString());
+		saveSource = mapFrom.getSelectedValue();
+		if (VERBOSE) System.out.println("resettingSource: " + saveSource.descriptor());
 		resetTarget(saveSource);
 	}
 
@@ -112,34 +181,32 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 private void resetTarget(MappingSource src)
 {
 	//	filter the targets to remove the source, and anything species-specific
-	saveTarget = MappingSource.nameLookup(mapTo.getSelectedValue());
+	saveTarget = mapTo.getSelectedValue();
 	if ((saveTarget == null || saveTarget == src) && mapTo.getPossibleValues().size() > 0)
-		saveTarget = MappingSource.nameLookup(mapTo.getPossibleValues().get(0));
+		saveTarget = mapTo.getPossibleValues().get(0);
 	if (saveTarget == null) 
 		saveTarget = MappingSource.ENSEMBL;
-	//	System.out.println("resetTarget: " + saveTarget.descriptor());
-	List<String> filtered = MappingSource.filteredStrings(saveSpecies, src);
+	List<MappingSource> filtered = MappingSource.filteredStrings(saveSpecies, src);
 	mapTo.setPossibleValues(filtered);
-	mapTo.setSelectedValue(saveTarget.getMenuString());
+	mapTo.setSelectedValue(saveTarget);
 
 }
 
 	//------------------------------------------------------------------------	
-	void saveSpeciesProperty(Species cur)	{		saveSpecies = cur;	}
+	private void saveSpeciesProperty(Species cur)	{		saveSpecies = cur;	}
 	
 	@ProvidesTitle
 	public String getTitle() {		return "ID Mapping";	}
 	
-	
 	// look at AbstractCyNetworkReader:98 for an example of Tunables with methods
 	@Tunable(description="Species", gravity=0.0, longDescription="The latin name of the species to which the identifiers apply",exampleStringValue = "Homo Sapiens")
 	public ListSingleSelection<String> speciesList  =  new ListSingleSelection<String>(Species.fullNames());
-	//------------------------------------------------------------------------
+
 	@Tunable(description="Map from", gravity=1.0, longDescription="Specifies the database describing the existing identifiers", exampleStringValue="ENSEMBL")
-	public ListSingleSelection<String> mapFrom = new ListSingleSelection<String>();
+	public ListSingleSelection<MappingSource> mapFrom = new ListSingleSelection<MappingSource>();
 
 	@Tunable(description="To", gravity=2.0, longDescription="Specifies the database identifiers to be looked up", exampleStringValue="Entrez")
-	public ListSingleSelection<String> mapTo	= new ListSingleSelection<String>();
+	public ListSingleSelection<MappingSource> mapTo	= new ListSingleSelection<MappingSource>();
 
 	@Tunable(description="Force single ", gravity=3.0, longDescription="When multiple identifiers can be mapped from a single term, this forces a singular result", exampleStringValue="false")
 	public boolean forceSingle = true;
@@ -150,17 +217,17 @@ private void resetTarget(MappingSource src)
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
+		
 		String species = speciesList.getSelectedValue();
-		String rawTarget = mapTo.getSelectedValue();
-		String rawSource = mapFrom.getSelectedValue();
-		final MappingSource source = MappingSource.nameLookup(rawSource);
+		MappingSource rawTarget = mapTo.getSelectedValue();
+		MappingSource source = mapFrom.getSelectedValue();
 		if (column.getType() ==  Double.class || column.getType() ==  Integer.class || column.getType() ==  Boolean.class)
 		{
 			if (VERBOSE) System.out.println("Can't map a numeric column as identifiers");		// tell the user?
 			return;
 		}
 		if (VERBOSE) System.out.println("raw str: " + rawTarget);
-		saveTarget = MappingSource.nameLookup(rawTarget);
+		saveTarget = rawTarget;
 		if (VERBOSE) System.out.println("reading target as " + saveTarget);
 		saveSpecies = Species.lookup(species);
 		if (VERBOSE) System.out.println("saving species as " + saveSpecies.name());
@@ -168,7 +235,9 @@ private void resetTarget(MappingSource src)
 		if (column.getType() == List.class)
 			source_is_list = true;
 
-		final List values = column.getValues(column.getType());
+
+		saveSpecies();
+	final List values = column.getValues(column.getType());
 
 		final List<String> ids = new ArrayList<String>();
 		for (final Object v : values) {
@@ -285,6 +354,11 @@ private void resetTarget(MappingSource src)
 	}
 	@Override
 	public void listChanged(ListSelection<String> source) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void selectionChanged(ListSelection<String> source) {
 		// TODO Auto-generated method stub
 		
 	}

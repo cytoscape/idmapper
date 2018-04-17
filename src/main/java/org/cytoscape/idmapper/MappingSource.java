@@ -1,4 +1,4 @@
-package org.cytoscape.idmapper.internal;
+package org.cytoscape.idmapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +52,14 @@ public enum MappingSource {
 				return src;
 		return null;		
 	}
+	public List<String> systems(String sys)
+	{
+		List<String> results = new ArrayList<String>();
+		for (MappingSource src : MappingSource.values())
+			if (src.system.equals(sys)) 
+				results.add(src.system);
+		return results;		
+	}
 
 	public static MappingSource nameLookup(String str)
 	{
@@ -63,10 +71,19 @@ public enum MappingSource {
 		return null;		
 	}
 
+	public static List<MappingSource> nameLookup(List<MappingSource> srcs)
+	{
+		List<MappingSource> results = new ArrayList<MappingSource>();
+		for (MappingSource src : srcs)
+			results.add(src);
+		return results;		
+	}
+
 	public boolean matchSpecies(Species inSpecies)	
 	{
 		boolean isMatch =  species == null || inSpecies == null || inSpecies.match(species);	
-		if (VERBOSE) System.out.println("MATCHING: " + inSpecies.common() + " TO " + descriptor + ": " + (isMatch ? "TRUE" : "FALSE"));
+		if (VERBOSE && isMatch)
+			System.out.println("MATCHING: " + inSpecies.common() + " TO " + descriptor + ": " + (isMatch ? "TRUE" : "FALSE"));
 			
 		return isMatch;
 	}
@@ -89,24 +106,46 @@ public enum MappingSource {
 //		return strs;
 //	}
 	
+//	// get the list of sources that are available for this species
+//	public static List<MappingSource> filteredStringList(Species inSpecies, List<MappingSource> inSources) {
+//		if (VERBOSE) System.out.println("+========== filteredStrings called: " + inSpecies.common() + " _ " + (inSources.size() > 0 ? inSources.get(0) : ""));
+//		int n = values().length;
+//		List<MappingSource> matchingSources = new ArrayList<MappingSource>();
+//		String srcName = inSources.isEmpty() ? "" : inSources.get(0).name();
+//		for (MappingSource src : values())
+//		{
+//			if (inSources.contains(src))  continue;
+//			if (src.matchSpecies(inSpecies))
+//			{
+//				if (!src.name().equals(srcName))
+//					matchingSources.add(src);
+//			}
+//		}
+//		if (VERBOSE) System.out.println(inSpecies.common() + " " + srcName);
+//		if (inSpecies==Species.Yeast )
+//			matchingSources.add(MappingSource.ENSEMBL);
+//			
+//		if (VERBOSE) System.out.println("Matches: " + matchingSources);
+//		return matchingSources;	
+//	}
 	// get the list of sources that are available for this species
-	public static List<String> filteredStrings(Species inSpecies, MappingSource inSource) {
-		if (VERBOSE) System.out.println("+========== filteredStrings called: " + inSpecies.common() + " _ " + inSource);
-		int n = values().length;
-		List<String> matchingSources = new ArrayList<String>();
+	public static List<MappingSource> filteredStrings(Species inSpecies, MappingSource inSource) {	
+		assert(inSpecies != null);
+		if (VERBOSE) System.out.println("+========== filteredStrings called: " + inSpecies.common() + " _ " +inSource + " _ " + values().length);
+		List<MappingSource> matchingSources = new ArrayList<MappingSource>();
 		String srcName = inSource == null ? "" : inSource.name();
 		for (MappingSource src : values())
 		{
-			if (src == inSource) continue;
+			if (inSource == src)  continue;
 			if (src.matchSpecies(inSpecies))
 			{
 				if (!src.name().equals(srcName))
-					matchingSources.add(src.getMenuString());
+					matchingSources.add(src);
 			}
 		}
 		if (VERBOSE) System.out.println(inSpecies.common() + " " + srcName);
-		if (inSpecies==Species.Yeast )
-			matchingSources.add(MappingSource.ENSEMBL.getMenuString());
+		if (inSpecies.isYeast() )
+			matchingSources.add(MappingSource.ENSEMBL);
 			
 		if (VERBOSE) System.out.println("Matches: " + matchingSources);
 		return matchingSources;	
@@ -125,7 +164,8 @@ public enum MappingSource {
 		return pattern.matcher(id).matches();	
 	}
 
-	private static boolean VERBOSE = true;
+	private static boolean VERBOSE = false;
+	private static int MAX_SAMPLE_SIZE = 10;
 
 	public static MappingSource guessSource(Species inSpecies, List<String> names) {
 
@@ -135,7 +175,7 @@ public enum MappingSource {
 //		for (MappingSource src : values())
 //			System.out.println(src.descriptor +  " matches " + counter.get(src));
 	
-		int sampleSize = Math.min(names.size(),  10);		// don't look at more than 10 lines to guess
+		int sampleSize = Math.min(names.size(),  MAX_SAMPLE_SIZE);	// don't look at more than a handful of lines to guess
 		for (int i=0; i<sampleSize; i++)
 		{
 			String id = names.get(i);
@@ -145,9 +185,9 @@ public enum MappingSource {
 					counter.put(src, counter.get(src)+1);
 			}
 			int ensemblCt = counter.get(MappingSource.ENSEMBL) + 1;
-			if ((inSpecies == Species.Yeast && id.startsWith("Y")) ||
-					(inSpecies == Species.Fruit_fly && id.startsWith("F")) ||
-						(inSpecies == Species.Worm && id.startsWith("W")))
+			if ((inSpecies.isYeast() && id.startsWith("Y")) ||
+					(inSpecies.isFly() && id.startsWith("F")) ||
+						(inSpecies.isWorm() && id.startsWith("W")))
 				counter.put(MappingSource.ENSEMBL, ensemblCt);
 		}
 		MappingSource maxSrc = null;

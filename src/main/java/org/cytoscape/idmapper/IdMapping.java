@@ -2,14 +2,10 @@ package org.cytoscape.idmapper;
 
 import java.util.Set;
 
-import org.cytoscape.idmapper.internal.MappingSource;
-
 /**
- * This is used to express one-to-one, one-to-many, many-to-one, and
- * many-to-many relationships of biological identifiers from different database
- * source and/or species.
- *
- * @author cmzmasek
+ * This is used to express one-to-one relationships of biological identifiers 
+
+ * @author adam treister
  *
  */
 public interface IdMapping {
@@ -53,21 +49,5 @@ public interface IdMapping {
      */
     public MappingSource getTargetType();
 
-    /**
-     * This returns the species of the target ids (e.g. "Homo sapiens") of this
-     * id mapping relationship. In most cases, source and target species are the
-     * same.
-     *
-     * @return the target species.
-     */
-//    public String getTargetSpecies();
-
-    /**
-     * This returns the type of relationship between source and target ids (e.g.
-     * "xrefs", "orthologs", "paralogs", "homologs").
-     *
-     * @return the relationship type
-     */
-//    public String getRelationshipType();
 
 }

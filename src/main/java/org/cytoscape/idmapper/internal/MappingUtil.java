@@ -14,26 +14,23 @@ import org.cytoscape.model.CyTable;
 /**
  * Utility methods for Id mapping clients.
  *
- *
- * @author cmzmasek
- *
  */
 public final class MappingUtil {
 
     /**
      * Adds Object v as trimmed String to List ids.
      *
-     * @param ids
-     *            the list to add to
-     * @param v
-     *            the item to add
+     * @param ids 	 the list to add to
+     * @param v 		 the item to add
      */
-    public final static void addCleanedStrValueToList(final List<String> ids,
-                                                      final Object v) {
+    public final static void addCleanedStrValueToList(final List<String> ids, final Object v) 
+    {
        if (v instanceof String)
-    	   if ((ids != null) && (v != null)) {
+    	   if ((ids != null) && (v != null)) 
+    	   {
             String v_str = (String) v;
-            if (v_str != null) {
+            if (v_str != null) 
+            {
                 v_str = v_str.trim();
                 if (v_str.length() > 0)    ids.add(v_str);
             }
@@ -44,18 +41,13 @@ public final class MappingUtil {
      * This is to add mapping results to a table column.
      *
      *
-     * @param source_is_list
-     *            true if the the source column has list values
-     * @param res
-     *            the mapping result
-     * @param table
-     *            the table to use
-     * @param column
-     *            the column to add to
-     * @param new_column_name
-     *            the name for the new column
-     * @param force_single
-     *            to force to use only use one mapped id
+     * @param source_is_list 	true if the the source column has list values
+     * @param res 				the mapping result
+     * @param table 				the table to use
+     * @param column 			the column to add to
+     * @param new_column_name 	the name for the new column
+     * @param force_single 		to force to use only use one mapped id
+     * 
      * @return true if many to one mapping occurred
      */
     public final static boolean fillNewColumn(final boolean source_is_list,
@@ -128,15 +120,11 @@ public final class MappingUtil {
     /**
      * To determine if all mappings are one/many-to-one
      *
-     * @param source_is_list
-     *            true if the the source column has list values
-     * @param res
-     *            the mapping result
-     * @param column
-     *            the column to add to
-     * @param table
-     *            the table to use
-     * @return true if all mappings are one/many-to-one
+     * @param source_is_list    	true if the the source column has list values
+     * @param res 				the mapping result
+     * @param column 			the column to add to
+     * @param table 				the table to use
+     * @return 					true if all mappings are one/many-to-one
      */
     @SuppressWarnings("unchecked")
     public final static boolean isAllSingle(final boolean source_is_list,
@@ -205,20 +193,15 @@ public final class MappingUtil {
      * name
      *
      *
-     * @param target
-     *            the target id type
-     * @param source
-     *            the source id type
-     * @param new_column_name
-     *            a suggested new name, can be null or empty
-     * @param column
-     *            the source column
+     * @param target 		 	the target id type
+	 * @param source 			the source id type
+     * @param new_column_name 	a suggested new name, can be null or empty
+     * @param column 			the source column
      * @return a new column name
      */
     public final static String makeNewColumnName(final String target,
-                                                 final String source,
-                                                 final String new_column_name,
-                                                 final CyColumn column) {
+                final String source,final String new_column_name,final CyColumn column) 
+    {
 
         final String my_target = target;
         final String my_source = source;
@@ -246,32 +229,14 @@ public final class MappingUtil {
      * To create a simple message informing the user about the success of the
      * mapping operation.
      *
-     *
-     * @param new_column_name
-     * @param target
-     * @param source
-     * @param ids
-     * @param matched_ids
-     * @param all_unique
-     * @param non_unique
-     * @param unique
-     * @param min
-     * @param max
-     * @param many_to_one
-     * @return
      */
     public final static String createMsg(final String new_column_name,
-                                         final String target,
-                                         final String source,
-                                         final List<String> ids,
-                                         final Set<String> matched_ids,
+                                         final String target, 	final String source,
+                                         final List<String> ids, 	final Set<String> matched_ids,
                                          final boolean all_unique,
-                                         final int non_unique,
-                                         final int unique,
-                                         final int min,
-                                         final int max,
-                                         final boolean many_to_one, 
-                                         final boolean force_single) {
+                                         final int non_unique, 	final int unique,
+                                         final int min, 			final int max,
+                                         final boolean many_to_one,  final boolean force_single) {
         final String msg;
         String srcTarget = "Mapped: " + source + " -> " + target + "\n" ;
         if (matched_ids.size() < 1) 

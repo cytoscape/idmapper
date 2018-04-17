@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import org.cytoscape.idmapper.IdGuess;
 import org.cytoscape.idmapper.IdMapper;
 import org.cytoscape.idmapper.IdMapping;
+import org.cytoscape.idmapper.MappingSource;
 
 import java.util.Set;
 import java.util.TreeMap;
@@ -50,27 +51,11 @@ public class BridgeDbIdMapper implements IdMapper {
      * @param url
      *            the URL of the service
      */
-    public BridgeDbIdMapper(final String url) {
-        _url = url;
-    }
+    public BridgeDbIdMapper(final String url) {        _url = url;    }
+    public BridgeDbIdMapper() 	{   this(DEFAULT_MAP_SERVICE_URL_STR);    }
 
-    /**
-     * Constructor
-     *
-     */
-    public BridgeDbIdMapper() {
-        _url = DEFAULT_MAP_SERVICE_URL_STR;
-    }
-
-    @Override
-    public Set<String> getUnmatchedIds() {
-        return _unmatched_ids;
-    }
-
-    @Override
-    public Set<String> getMatchedIds() {
-        return _matched_ids;
-    }
+    @Override    public Set<String> getUnmatchedIds() {       return _unmatched_ids;    }
+    @Override    public Set<String> getMatchedIds() {        return _matched_ids;    }
 
     @Override
     public Map<String, IdMapping> map(final Collection<String> query_ids,
@@ -98,12 +83,18 @@ public class BridgeDbIdMapper implements IdMapper {
                 return res;
 
             }
-            catch (final IOException e) {
-                e.printStackTrace();
-            }
+            catch (final IOException e) {  e.printStackTrace();      }
 
         }
         return null;
+    }
+
+    public Map<String, IdMapping> mapList(final Collection<String> query_ids,
+                                      final List<MappingSource> source_types,
+                                      final List<MappingSource> target_types,
+                                      final String source_species,
+                                      final String target_species) {
+         return null;
     }
 
     @Override
@@ -116,16 +107,11 @@ public class BridgeDbIdMapper implements IdMapper {
      * This parses the response (List of String).
      *
      *
-     * @param res_list
-     *            to response to be parsed
-     * @param source_species
-     *            the source species
-     * @param source_type
-     *            the source type
-     * @param target_species
-     *            the target species
-     * @param target_type
-     *            the target type
+     * @param res_list 			to response to be parsed
+     * @param source_species 	the source species
+     * @param source_type 		the source type
+     * @param target_species     the target species
+     * @param target_type 		the target type
      * @return the result of the parsing as Map of String to IdMapping
      * @throws IOException
      */
@@ -177,16 +163,11 @@ public class BridgeDbIdMapper implements IdMapper {
     /**
      * This posts a query to a URL
      *
-     * @param url_str
-     *            the URL to post to
-     * @param species
-     *            the species
-     * @param command
-     *            the target type
-     * @param database
-     *            the database
-     * @param query
-     *            the query
+     * @param url_str 	 	the URL to post to
+     * @param species 		the species
+     * @param command 		the target type
+     * @param database 		the database
+     * @param query 			the query
      * @return the response as List of String
      * @throws IOException
      */
@@ -228,7 +209,7 @@ public class BridgeDbIdMapper implements IdMapper {
     }
 
     /**
-     * Runs to query against a URL.
+     * Runs a query against a URL.
      *
      * @param ids
      * @param species
@@ -248,7 +229,7 @@ public class BridgeDbIdMapper implements IdMapper {
     }
 
     /**
-     * To make the query String.
+     * To make the query String as a list of one id per line
      *
      *
      * @param ids
