@@ -61,59 +61,60 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 			mapFrom.addListener(new MappingSourceListener(this));
 			mapTo.addListener(new MappingSourceListener(this));
 			resetSpecies();
-			boolean smartSticky = true;
-			if (smartSticky)
-			{
-				CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
-				CyTable networkTable = network.getDefaultNetworkTable();
-//				StringToModel stMod = registrar.getService(StringToModel.class);
-//				if (stMod == null) 
-//					System.err.println("Unable to fetch StringToModel bundle");
-//				else 
-//				{
-////					CyTable networkTable = stMod.getTable("Network Table");
-////					if (networkTable == null)
-////						System.err.println("Unable to fetch networkTable");
-//					CyTable networkTable = stMod.getTable("Network");
-//					if (networkTable == null)
-//						System.err.println("Still Unable to fetch networkTable");
-//					else
-//						{
-						List<CyRow> rows = networkTable.getAllRows();
-						System.out.println("rows: " + rows.size());
-						CyRow row = rows.get(0);
-						System.out.println("row: " + row);
-						String speciesStr = row.get("idmapper.species", String.class);
-						System.out.println("got as " + speciesStr);
-						if (speciesStr != null)
-						{
-							Species sp = Species.lookup(speciesStr);
-							System.out.println("read as " + sp);
-							if (sp != null)
-								saveSpecies = sp;
-						}
-//					}
-//				}
-				System.out.println("smartSticky saveSpecies read as " + saveSpecies);
-				speciesList.setSelectedValue(saveSpecies.fullname());
-			}		
+			String species = readSpeciesFromNetworkTable();
+			if (species != null)
+				speciesList.setSelectedValue(species);
 		}
 	}
-	
-	public void saveSpecies()
+	private String getValueFromNetworkTable(String key) 		
 	{
-		System.out.print("saved Species as ");
+		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		CyTable networkTable = network.getDefaultNetworkTable();
+		List<CyRow> rows = networkTable.getAllRows();
+		if (rows.isEmpty()) return null;
+		CyRow row = rows.get(0);
+		return row.get(key, String.class);
+	}
+	
+	private void putValueIntoNetworkTable(String key, String value) 		
+	{
 		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		CyTable networkTable = network.getDefaultNetworkTable();
 		if (networkTable != null )
 		{
 			CyColumn col = networkTable.getColumn("idmapper.species");
 			if (col == null)
-				networkTable.createColumn("idmapper.species", String.class, false); 
-			networkTable.getAllRows().get(0).set("idmapper.species", saveSpecies.toString());
-			System.out.println(saveSpecies.toString());
-		}		
+				networkTable.createColumn(key, String.class, false); 
+		}
+		List<CyRow> rows = networkTable.getAllRows();
+		if (rows.isEmpty()) 
+		{
+			return;
+		}
+		CyRow row = rows.get(0);
+		row.set(key, value);
 	}
+	
+	private String readSpeciesFromNetworkTable() 		
+	{
+		String speciesStr = getValueFromNetworkTable("idmapper.species");
+		if (speciesStr != null)
+		{
+			Species sp = Species.lookup(speciesStr);		// matches name or common or latin
+			if (VERBOSE) System.out.println("read as " + sp);
+			if (sp != null)
+				saveSpecies = sp;
+		}
+		if (VERBOSE) System.out.println("saveSpecies read as " + saveSpecies.fullname());
+		return saveSpecies.fullname();
+		
+	}		
+
+	public void storeSpeciesIntoNetworkTable()
+	{
+		putValueIntoNetworkTable("idmapper.species", saveSpecies.toString());
+	}
+	
 	public void speciesSelectionChanged(ListSelection<String> source) 
 	{
 		String name = null;
@@ -131,12 +132,14 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 		}
 	}
 		
+	//=========================================================================
 	public void mappingSourceChanged(ListSelection<MappingSource> source) 
 	{
 		String name = null;
 		if (source == mapFrom) name = "source_selection";
-		if (source == mapTo) name = "target_selection";
+		if (source == mapTo) 	name = "target_selection";
 //		System.out.println("selectionChanged: at " + name);
+		
 		if (source instanceof ListSingleSelection<?>)
 		{
 			ListSingleSelection<MappingSource> src = (ListSingleSelection<MappingSource>)source;
@@ -153,9 +156,7 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 		speciesList.setSelectedValue(saveSpecies.fullname());
 		guessSource();
 	}	
-	
-	
-	
+		
 	private void guessSource() {
 		
 		List<MappingSource> strs = MappingSource.filteredStrings(saveSpecies, null);
@@ -171,6 +172,7 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 			resetSource();
 		}		
 	}
+	
 	private void resetSource() {
 		saveSource = mapFrom.getSelectedValue();
 		if (VERBOSE) System.out.println("resettingSource: " + saveSource.descriptor());
@@ -192,8 +194,7 @@ private void resetTarget(MappingSource src)
 
 }
 
-	//------------------------------------------------------------------------	
-	private void saveSpeciesProperty(Species cur)	{		saveSpecies = cur;	}
+//=========================================================================
 	
 	@ProvidesTitle
 	public String getTitle() {		return "ID Mapping";	}
@@ -234,10 +235,10 @@ private void resetTarget(MappingSource src)
 		boolean source_is_list = false;
 		if (column.getType() == List.class)
 			source_is_list = true;
-
-
-		saveSpecies();
-	final List values = column.getValues(column.getType());
+		
+		storeSpeciesIntoNetworkTable();
+	
+		final List values = column.getValues(column.getType());
 
 		final List<String> ids = new ArrayList<String>();
 		for (final Object v : values) {
@@ -261,8 +262,7 @@ private void resetTarget(MappingSource src)
 			unmatched_ids = map.getUnmatchedIds();
 		} catch (final Exception e) {
 			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
+				@Override public void run() {
 					JOptionPane.showMessageDialog(null, e.getMessage(), "ID Mapping Error", JOptionPane.ERROR_MESSAGE);
 				}
 			});
