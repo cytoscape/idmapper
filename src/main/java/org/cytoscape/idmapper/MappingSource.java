@@ -10,17 +10,17 @@ public enum MappingSource {
 
 //	Unspecified ("Unspecified", "", "", "^[A-Za-z0-9]+", "" ),
 	HGNC ("HGNC", "H", "Homo sapiens", "^[A-Za-z0-9]+", "DAPK1" ),
-	ENSEMBL ("Ensembl", "En", "", "^ENS[A-Z]*[FPTG]\\d{11}$", "ENSG00000139618"),			//|^[YFW]*$		also accept anything that starts with Y, F, W ??
-	Entrez_Gene ("Entrez Gene", "L", "", "^\\d+$", "11234"),
+	Ensembl ("Ensembl", "En", "", "^ENS[A-Z]*[FPTG]\\d{11}$", "ENSG00000139618"),			//|^[YFW]*$		also accept anything that starts with Y, F, W ??
+	Entrez ("Entrez Gene", "L", "", "^\\d+$", "11234"),
 	FlyBase ("FlyBase", "F", "Drosophila melanogaster", "^FB\\w{2}\\d{7}$", "FBgn0011293"),
-	KEGG_Genes ("KEGG Genes", "Kg", "", "^\\w+:[\\w\\d\\.-]*$", "syn:ssr3451" ),
+	KEGG ("KEGG Genes", "Kg", "", "^\\w+:[\\w\\d\\.-]*$", "syn:ssr3451" ),
 	MGI ("MGI", "M", "Mus musculus", "^MGI:\\d+$", "MGI:2442292" ),
 	miRBase ("miRBase", "Mbm", "", "MIMAT\\d{7}", "MIMAT0000001" ),
 	RGD ("RGD", "R", "Rattus norvegicus", "^\\d{4,7}$", "2018" ),
 	SGD ("SGD", "D", "Saccharomyces cerevisiae", "^S\\d+$", "S000028457" ),
 	TAIR ("TAIR", "A", "Arabidopsis thaliana", "^AT[1-5]G\\d{5}$", "AT1G01030" ),
 	UniGene ("UniGene", "U", "", "[A-Z][a-z][a-z]?\\.\\d+", "Hs.553708" ),
-	Uniprot_TrEMBL("Uniprot-TrEMBL", "S", "", "^([A-N,R-Z][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9])|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\.\\d+)?|([A-N,R-Z][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9])$", "P62158"),
+	Uniprot ("Uniprot-TrEMBL", "S", "", "^([A-N,R-Z][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9])|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\.\\d+)?|([A-N,R-Z][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9])$", "P62158"),
 	WormBase ("WormBase", "W", "Caenorhabditis elegans", "^WBGene\\d{8}$", "WBGene00000001" ),
 	ZFIN ("ZFIN", "Z", "Danio rerio", "ZDB\\-GENE\\-\\d+\\-\\d+", "ZDB-GENE-041118-11");
 
