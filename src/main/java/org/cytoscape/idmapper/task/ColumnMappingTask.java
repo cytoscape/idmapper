@@ -37,10 +37,10 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 
 
 //	public static final boolean DEBUG = true;
-	public static final boolean VERBOSE = false;
+	public static final boolean VERBOSE = true;
 	private static Species saveSpecies = Species.Human;
-	private static MappingSource saveSource = MappingSource.Entrez_Gene;
-	private static MappingSource saveTarget = MappingSource.Entrez_Gene;
+	private static MappingSource saveSource = MappingSource.Entrez;
+	private static MappingSource saveTarget = MappingSource.Entrez;
 	private  final CyServiceRegistrar registrar;
 
 	class MappingSourceListener implements  ListChangeListener<MappingSource>
@@ -66,34 +66,6 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 				speciesList.setSelectedValue(species);
 		}
 	}
-	private String getValueFromNetworkTable(String key) 		
-	{
-		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
-		CyTable networkTable = network.getDefaultNetworkTable();
-		List<CyRow> rows = networkTable.getAllRows();
-		if (rows.isEmpty()) return null;
-		CyRow row = rows.get(0);
-		return row.get(key, String.class);
-	}
-	
-	private void putValueIntoNetworkTable(String key, String value) 		
-	{
-		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
-		CyTable networkTable = network.getDefaultNetworkTable();
-		if (networkTable != null )
-		{
-			CyColumn col = networkTable.getColumn("idmapper.species");
-			if (col == null)
-				networkTable.createColumn(key, String.class, false); 
-		}
-		List<CyRow> rows = networkTable.getAllRows();
-		if (rows.isEmpty()) 
-		{
-			return;
-		}
-		CyRow row = rows.get(0);
-		row.set(key, value);
-	}
 	
 	private String readSpeciesFromNetworkTable() 		
 	{
@@ -117,8 +89,6 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 	
 	public void speciesSelectionChanged(ListSelection<String> source) 
 	{
-		String name = null;
-		if (source == speciesList) name = "speciesList";
 		if (source instanceof ListSingleSelection<?>)
 		{
 			ListSingleSelection<String> src = (ListSingleSelection<String>)source;
@@ -133,11 +103,40 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 	}
 		
 	//=========================================================================
+	private String getValueFromNetworkTable(String key) 		
+	{
+		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		CyTable networkTable = network.getDefaultNetworkTable();
+		List<CyRow> rows = networkTable.getAllRows();
+		if (rows.isEmpty()) return null;
+		CyRow row = rows.get(0);
+		return row.get(key, String.class);
+	}
+	
+	private void putValueIntoNetworkTable(String key, String value) 		
+	{
+		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		CyTable networkTable = network.getDefaultNetworkTable();
+		if (networkTable != null )
+		{
+			CyColumn col = networkTable.getColumn(key);
+			if (col == null)
+				networkTable.createColumn(key, String.class, false); 
+		}
+		List<CyRow> rows = networkTable.getAllRows();
+		if (rows.isEmpty()) 
+		{
+			return;
+		}
+		CyRow row = rows.get(0);
+		row.set(key, value);
+	}
+	//=========================================================================
 	public void mappingSourceChanged(ListSelection<MappingSource> source) 
 	{
-		String name = null;
-		if (source == mapFrom) name = "source_selection";
-		if (source == mapTo) 	name = "target_selection";
+//		String name = null;
+//		if (source == mapFrom) name = "source_selection";
+//		if (source == mapTo) 	name = "target_selection";
 //		System.out.println("selectionChanged: at " + name);
 		
 		if (source instanceof ListSingleSelection<?>)
@@ -175,7 +174,7 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 	
 	private void resetSource() {
 		saveSource = mapFrom.getSelectedValue();
-		if (VERBOSE) System.out.println("resettingSource: " + saveSource.descriptor());
+		if (VERBOSE) System.out.println("resettingSource: " + (saveSource == null ? "N/A" : saveSource.descriptor()));
 		resetTarget(saveSource);
 	}
 
@@ -187,7 +186,7 @@ private void resetTarget(MappingSource src)
 	if ((saveTarget == null || saveTarget == src) && mapTo.getPossibleValues().size() > 0)
 		saveTarget = mapTo.getPossibleValues().get(0);
 	if (saveTarget == null) 
-		saveTarget = MappingSource.ENSEMBL;
+		saveTarget = MappingSource.Ensembl;
 	List<MappingSource> filtered = MappingSource.filteredStrings(saveSpecies, src);
 	mapTo.setPossibleValues(filtered);
 	mapTo.setSelectedValue(saveTarget);
@@ -354,13 +353,12 @@ private void resetTarget(MappingSource src)
 	}
 	@Override
 	public void listChanged(ListSelection<String> source) {
-		// TODO Auto-generated method stub
-		
+		speciesSelectionChanged(source);
 	}
 	@Override
 	public void selectionChanged(ListSelection<String> source) {
-		// TODO Auto-generated method stub
-		
+		speciesSelectionChanged(source);
+
 	}
 
 //	 #3666

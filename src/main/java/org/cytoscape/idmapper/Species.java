@@ -102,17 +102,20 @@ public enum Species {
 	{
 		if ( name.equals(other)) return true;
 		if ( latin.equals(other)) return true;
+		if ( fullname().equals(other)) return true;
+		if ( toString().equals(other)) return true;
 		return false;
 	}
 	
 	public boolean match(Species other)
 	{
-		if (other == null || other.name().trim().length() == 0) return true;	
+		if (other == null || other.name().trim().length() == 0) return true;	// match 
 		return (name.equals(other.name));
 	}
+	
 	public boolean isHuman()	{		return (match(Species.Human));	}
-	public boolean isFly()	{		return (match(Species.Fruit_fly));	}
+	public boolean isFly()		{		return (match(Species.Fruit_fly));	}
 	public boolean isYeast()	{		return (match(Species.Yeast));	}
-	public boolean isWorm()	{		return (match(Species.Worm));	}
+	public boolean isWorm()		{		return (match(Species.Worm));	}
 	public boolean isMouse()	{		return (match(Species.Mouse));	}
 }
