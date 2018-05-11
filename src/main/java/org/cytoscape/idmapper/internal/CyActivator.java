@@ -23,19 +23,21 @@ public class CyActivator extends AbstractCyActivator {
         final CyServiceRegistrar reg = getService(bc, CyServiceRegistrar.class);
         final MapColumnTaskFactory mapColumnTaskFactory = new MapColumnTaskFactoryImpl( undo, tunable, reg);
 
-        final Properties mapColumnTaskFactoryProps = new Properties();
-        mapColumnTaskFactoryProps.setProperty(ServiceProperties.TITLE, "Map column...");
-        mapColumnTaskFactoryProps.setProperty(ServiceProperties.COMMAND, "map column");
-        mapColumnTaskFactoryProps.setProperty(ServiceProperties.COMMAND_NAMESPACE, "idmapper");
-        mapColumnTaskFactoryProps.setProperty(ServiceProperties.COMMAND_DESCRIPTION,  "Map a column contents to another id format");
+        final Properties props = new Properties();
+        props.setProperty(ServiceProperties.TITLE, "Map column...");
+        props.setProperty(ServiceProperties.COMMAND, "map column");
+        props.setProperty(ServiceProperties.ENABLE_FOR, "true");
+        
+        props.setProperty(ServiceProperties.COMMAND_NAMESPACE, "idmapper");
+        props.setProperty(ServiceProperties.COMMAND_DESCRIPTION,  "Map a column contents to another id format");
 
-        mapColumnTaskFactoryProps.setProperty(ServiceProperties.COMMAND_SUPPORTS_JSON, "true");
-      	mapColumnTaskFactoryProps.setProperty(ServiceProperties.COMMAND_EXAMPLE_JSON, JSON_EXAMPLE);
-    		mapColumnTaskFactoryProps.setProperty(ServiceProperties.COMMAND_LONG_DESCRIPTION,  "Uses the BridgeDB service to look up analogous identifiers from a wide selection of other databases");
+        props.setProperty(ServiceProperties.COMMAND_SUPPORTS_JSON, "true");
+      	props.setProperty(ServiceProperties.COMMAND_EXAMPLE_JSON, JSON_EXAMPLE);
+    	props.setProperty(ServiceProperties.COMMAND_LONG_DESCRIPTION,  "Uses the BridgeDB service to look up analogous identifiers from a wide selection of other databases");
 
-        registerService(bc, mapColumnTaskFactory, TableColumnTaskFactory.class, mapColumnTaskFactoryProps);
-        registerService(bc, mapColumnTaskFactory, MapColumnTaskFactory.class, mapColumnTaskFactoryProps);
-        registerService(bc, mapColumnTaskFactory, TaskFactory.class, mapColumnTaskFactoryProps);
+        registerService(bc, mapColumnTaskFactory, TableColumnTaskFactory.class, props);
+        registerService(bc, mapColumnTaskFactory, MapColumnTaskFactory.class, props);
+        registerService(bc, mapColumnTaskFactory, TaskFactory.class, props);
     }
 	String JSON_EXAMPLE = "{ \"new column\": \"mappedIDs\" }";
 

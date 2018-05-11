@@ -106,8 +106,7 @@ public enum MappingSource {
 			}
 		}
 		if (VERBOSE) System.out.println(inSpecies.common() + " " + srcName);
-//		if (inSpecies.isYeast() )
-//			matchingSources.add(MappingSource.Ensembl);
+
 			
 		if (VERBOSE) System.out.println("Matches: " + matchingSources);
 		return matchingSources;	
@@ -127,7 +126,7 @@ public enum MappingSource {
 	}
 
 	private static boolean VERBOSE = true;
-	private static int MAX_SAMPLE_SIZE = 10;
+	private static int N_ITERATIONS = 10;
 
 	public static MappingSource guessSource(Species inSpecies, List<String> names) {
 
@@ -137,7 +136,7 @@ public enum MappingSource {
 //		for (MappingSource src : values())
 //			System.out.println(src.descriptor +  " matches " + counter.get(src));
 	
-		int sampleSize = Math.min(names.size(),  MAX_SAMPLE_SIZE);	// don't look at more than a handful of lines to guess
+		int sampleSize = Math.min(names.size(),  N_ITERATIONS);	// don't look at more than a handful of lines to guess
 		for (int i=0; i<sampleSize; i++)
 		{
 			String id = names.get(i);
@@ -146,11 +145,11 @@ public enum MappingSource {
 				if (src.matchSpecies(inSpecies) && src.patternMatch(id))
 					counter.put(src, counter.get(src)+1);
 			}
-			int ensemblCt = counter.get(MappingSource.Ensembl) + 1;
+			int ensemblCt = counter.get(MappingSource.Ensembl);
 			if ((inSpecies.isYeast() && id.startsWith("Y")) ||
 					(inSpecies.isFly() && id.startsWith("F")) ||
 						(inSpecies.isWorm() && id.startsWith("W")))
-				counter.put(MappingSource.Ensembl, ensemblCt);
+				counter.put(MappingSource.Ensembl, ensemblCt + 1);
 		}
 		MappingSource maxSrc = null;
 		int maxCount = 0;
@@ -158,12 +157,16 @@ public enum MappingSource {
 		for (MappingSource src : values())
 		{
 			int count = counter.get(src);
-			if (count > maxCount)  { 	maxCount = count; maxSrc = src;	}		// this favors the earlier in the list
+			if (count >= maxCount)  { 	maxCount = count; maxSrc = src;	}		// this favors the earlier in the list
 			if (VERBOSE) 
 				System.out.println(src.descriptor +  " matches " + counter.get(src));
 		}
 		if (VERBOSE) 
-			System.out.println(maxSrc.descriptor +  " is maximum with  " + counter.get(maxSrc) + " matches");
+		{
+			String msg = "No Maximum Source found";
+			if (maxSrc != null) msg = maxSrc.descriptor +  " is maximum with  " + counter.get(maxSrc) + " matches";
+			System.out.println(msg);
+		}
 		return maxSrc;
 	}
 

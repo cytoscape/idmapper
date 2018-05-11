@@ -166,7 +166,8 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 		{
 			final List<String> ids = column.getValues(String.class);
 			saveSource = MappingSource.guessSource(saveSpecies, ids);
-			mapFrom.setSelectedValue(saveSource);
+			if (strs.contains(saveSource))
+				mapFrom.setSelectedValue(saveSource);
 			if (VERBOSE) System.out.println("\nguessed Source: " + saveSource.getMenuString());
 			resetSource();
 		}		
@@ -190,7 +191,6 @@ private void resetTarget(MappingSource src)
 	List<MappingSource> filtered = MappingSource.filteredStrings(saveSpecies, src);
 	mapTo.setPossibleValues(filtered);
 	mapTo.setSelectedValue(saveTarget);
-
 }
 
 //=========================================================================
@@ -199,13 +199,13 @@ private void resetTarget(MappingSource src)
 	public String getTitle() {		return "ID Mapping";	}
 	
 	// look at AbstractCyNetworkReader:98 for an example of Tunables with methods
-	@Tunable(description="Species", gravity=0.0, longDescription="The latin name of the species to which the identifiers apply",exampleStringValue = "Homo Sapiens")
+	@Tunable(description="Species", gravity=0.0, longDescription="The common or latin name of the species to which the identifiers apply",exampleStringValue = "Homo Sapiens")
 	public ListSingleSelection<String> speciesList  =  new ListSingleSelection<String>(Species.fullNames());
 
-	@Tunable(description="Map from", gravity=1.0, longDescription="Specifies the database describing the existing identifiers", exampleStringValue="ENSEMBL")
+	@Tunable(description="Map from", gravity=1.0, longDescription="Specifies the data source describing the existing identifiers", exampleStringValue="ENSEMBL")
 	public ListSingleSelection<MappingSource> mapFrom = new ListSingleSelection<MappingSource>();
 
-	@Tunable(description="To", gravity=2.0, longDescription="Specifies the database identifiers to be looked up", exampleStringValue="Entrez")
+	@Tunable(description="To", gravity=2.0, longDescription="Specifies the data source identifiers to be returned as a result in a new column", exampleStringValue="Entrez")
 	public ListSingleSelection<MappingSource> mapTo	= new ListSingleSelection<MappingSource>();
 
 	@Tunable(description="Force single ", gravity=3.0, longDescription="When multiple identifiers can be mapped from a single term, this forces a singular result", exampleStringValue="false")
@@ -271,18 +271,12 @@ private void resetTarget(MappingSource src)
 		if (VERBOSE) {
 			System.out.println();
 			System.out.println("Unmatched:");
-			if (unmatched_ids != null) {
-				for (final String u : unmatched_ids) {
-					System.out.println(u);
-				}
-			}
+			if (unmatched_ids != null) 
+				for (final String u : unmatched_ids) 	System.out.println(u);
 			System.out.println();
 			System.out.println("Matched:");
-			if (matched_ids != null) {
-				for (final String u : matched_ids) {
-					System.out.println(u);
-				}
-			}
+			if (matched_ids != null) 
+				for (final String u : matched_ids) 		System.out.println(u);
 			System.out.println();
 		}
 		new_column_name = saveTarget.descriptor();

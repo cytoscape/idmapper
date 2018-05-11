@@ -27,8 +27,8 @@ public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory imp
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
 
 		Class<?>	 type = column.getType();
-		if (type == Double.class) return null;
-		if (type == Integer.class) return null;
+//		if (type == Double.class) return null;
+//		if (type == Integer.class) return null;
 		return new TaskIterator(new ColumnMappingTask(undoSupport, column, serviceRegistrar));   //ColumnMultiMappingTask
 	}
 

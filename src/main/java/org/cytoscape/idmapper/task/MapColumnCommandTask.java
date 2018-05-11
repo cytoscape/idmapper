@@ -75,17 +75,17 @@ public final class MapColumnCommandTask extends AbstractTask implements Observab
 	public ListSingleSelection<String> species  =  new ListSingleSelection<String>(Species.fullNames());
 	
 	@Tunable(description="Column name",
-	         longDescription="Specifies the column nmae where the source identifiers are located",
+	         longDescription="Specifies the column name where the source identifiers are located",
 			exampleStringValue="name", context="nogui", required=true)
 	public ListSingleSelection<String> columnName = new ListSingleSelection<String>();
 
 	@Tunable(description="Source Database",
-			longDescription="Specifies the database describing the existing identifiers",
+			longDescription="Specifies the data source describing the existing identifiers",
 			exampleStringValue="Ensembl", context="nogui", required=true)
 	public ListSingleSelection<String> mapFrom = new ListSingleSelection<String>();
 
 	@Tunable(description="New Column Name",
-	         longDescription="Specifies the database identifiers to be looked up",
+	         longDescription="Specifies the column name where the target identifiers are located",
 	    	         context="nogui", exampleStringValue="SGD", required=true)
 	public ListSingleSelection<String> mapTo = new ListSingleSelection<String>();
 
@@ -95,7 +95,7 @@ public final class MapColumnCommandTask extends AbstractTask implements Observab
 	@Tunable(description="Network ", context="nogui", longDescription="Which network is used in the mapping", exampleStringValue="current")
 	public String networkName = "current";
 	
-	@Tunable(description="Table ", context="nogui", longDescription="Which table is used as the source of the identifiers", exampleStringValue="default node")
+	@Tunable(description="Table ", context="nogui", longDescription="Which table is used as the source of the identifiers, e.g., \"node\" for the default node table", exampleStringValue="default node")
 	public String table  = "node:current";
 	
 	
