@@ -68,33 +68,7 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 				speciesList.setSelectedValue(species);
 		}
 	}
-	
-	private String readSpeciesFromNetworkTable() 		
-	{
-		String speciesStr = getValueFromNetworkTable("idmapper.species");
-		if (speciesStr != null)
-		{
-			Species sp = Species.lookup(speciesStr);		// matches name or common or latin
-			if (VERBOSE) System.out.println("read as " + sp);
-			if (sp != null)
-				saveSpecies = sp;
-		}
-		if (VERBOSE) System.out.println("saveSpecies read as " + saveSpecies.fullname());
-		return saveSpecies.fullname();
-		
-	}		
 
-	@Override
-	public void setUIHelper(TunableUIHelper helper) {
-		if (VERBOSE) System.out.println("setUIHelper");
-
-		this.helper = helper;
-	}
-
-	public void storeSpeciesIntoNetworkTable()
-	{
-		putValueIntoNetworkTable("idmapper.species", saveSpecies.toString());
-	}
 	
 	public void speciesSelectionChanged(ListSelection<String> source) 
 	{
@@ -111,35 +85,6 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 		}
 	}
 		
-	//=========================================================================
-	private String getValueFromNetworkTable(String key) 		
-	{
-		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
-		CyTable networkTable = network.getDefaultNetworkTable();
-		List<CyRow> rows = networkTable.getAllRows();
-		if (rows.isEmpty()) return null;
-		CyRow row = rows.get(0);
-		return row.get(key, String.class);
-	}
-	
-	private void putValueIntoNetworkTable(String key, String value) 		
-	{
-		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
-		CyTable networkTable = network.getDefaultNetworkTable();
-		if (networkTable != null )
-		{
-			CyColumn col = networkTable.getColumn(key);
-			if (col == null)
-				networkTable.createColumn(key, String.class, false); 
-		}
-		List<CyRow> rows = networkTable.getAllRows();
-		if (rows.isEmpty()) 
-		{
-			return;
-		}
-		CyRow row = rows.get(0);
-		row.set(key, value);
-	}
 	//=========================================================================
 	public void mappingSourceChanged(ListSelection<MappingSource> source) 
 	{
@@ -231,9 +176,9 @@ private void resetTarget(MappingSource src)		//, List<MappingSource> targetList
 }
 
 //=========================================================================
-	
+	String windowTitle = "ID Mapping";
 	@ProvidesTitle
-	public String getTitle() {		return "ID Mapping";	}
+	public String getTitle() {		return windowTitle;	}
 	
 	// look at AbstractCyNetworkReader:98 for an example of Tunables with methods
 	@Tunable(description="Species", gravity=0.0, longDescription="The common or latin name of the species to which the identifiers apply",exampleStringValue = "Homo Sapiens")
@@ -250,6 +195,7 @@ private void resetTarget(MappingSource src)		//, List<MappingSource> targetList
 	
 	//------------------------------------------------------------------------
 	public String new_column_name = "";
+	public String ERROR = "Can't map this column type as identifiers";
 
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -260,7 +206,13 @@ private void resetTarget(MappingSource src)		//, List<MappingSource> targetList
 		MappingSource source = mapFrom.getSelectedValue();
 		if (column.getType() ==  Double.class || column.getType() ==  Integer.class || column.getType() ==  Boolean.class)
 		{
-			if (VERBOSE) System.out.println("Can't map a numeric column as identifiers");		// tell the user?
+			windowTitle = ERROR;
+			if (VERBOSE) 
+				System.out.println(ERROR);		// tell the user?
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override public void run() {
+					JOptionPane.showMessageDialog(null, ERROR, "ID Mapping Result", JOptionPane.WARNING_MESSAGE);
+				} });
 			return;
 		}
 		if (VERBOSE) System.out.println("raw str: " + rawTarget);
@@ -391,8 +343,66 @@ private void resetTarget(MappingSource src)		//, List<MappingSource> targetList
 		speciesSelectionChanged(source);
 
 	}
+	//=========================================================================
+	private String readSpeciesFromNetworkTable() 		
+	{
+		String speciesStr = getValueFromNetworkTable("idmapper.species");
+		if (speciesStr != null)
+		{
+			Species sp = Species.lookup(speciesStr);		// matches name or common or latin
+			if (VERBOSE) System.out.println("read as " + sp);
+			if (sp != null)
+				saveSpecies = sp;
+		}
+		if (VERBOSE) System.out.println("saveSpecies read as " + saveSpecies.fullname());
+		return saveSpecies.fullname();
+		
+	}		
+	public void storeSpeciesIntoNetworkTable()
+	{
+		putValueIntoNetworkTable("idmapper.species", saveSpecies.toString());
+	}
 
-//	 #3666
+	//=========================================================================
+	private String getValueFromNetworkTable(String key) 		
+	{
+		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		CyTable networkTable = network.getDefaultNetworkTable();
+		List<CyRow> rows = networkTable.getAllRows();
+		if (rows.isEmpty()) return null;
+		CyRow row = rows.get(0);
+		return row.get(key, String.class);
+	}
+	
+	private void putValueIntoNetworkTable(String key, String value) 		
+	{
+		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		CyTable networkTable = network.getDefaultNetworkTable();
+		if (networkTable != null )
+		{
+			CyColumn col = networkTable.getColumn(key);
+			if (col == null)
+				networkTable.createColumn(key, String.class, false); 
+		}
+		List<CyRow> rows = networkTable.getAllRows();
+		if (rows.isEmpty()) 
+		{
+			return;
+		}
+		CyRow row = rows.get(0);
+		row.set(key, value);
+	}
+	//-------------------------------------------------------------------------
+
+	@Override
+	public void setUIHelper(TunableUIHelper helper) {
+		if (VERBOSE) System.out.println("setUIHelper");
+
+		this.helper = helper;
+	}
+
+
+	//	 #3666
 // 	private void moveLastColumnTo(CyTable table, int index) {
 //		JTable nativeTable = table.
 //		Collection<CyColumn> cols = table.getColumnModel();
