@@ -397,7 +397,6 @@ private void resetTarget(MappingSource src)		//, List<MappingSource> targetList
 	@Override
 	public void setUIHelper(TunableUIHelper helper) {
 		if (VERBOSE) System.out.println("setUIHelper");
-
 		this.helper = helper;
 	}
 

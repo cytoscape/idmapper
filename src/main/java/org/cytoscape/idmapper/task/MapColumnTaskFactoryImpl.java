@@ -1,10 +1,15 @@
 package org.cytoscape.idmapper.task;
 
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractTableColumnTaskFactory;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -20,6 +25,17 @@ public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory imp
 		serviceRegistrar = reg;
 	}
 
+	public String ERROR = "Can't map this column type as identifiers";
+	class EmptyTask extends AbstractTask
+	{
+		@Override	public void run(TaskMonitor taskMonitor) throws Exception {	
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override public void run() {
+					JOptionPane.showMessageDialog(null, ERROR, "ID Mapping Result", JOptionPane.WARNING_MESSAGE);
+				} });
+
+		}
+	}
 	@Override
 	public TaskIterator createTaskIterator(final CyColumn column) {
 
@@ -27,8 +43,9 @@ public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory imp
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
 
 		Class<?>	 type = column.getType();
-//		if (type == Double.class) return null;
-//		if (type == Integer.class) return null;
+		if (type == Double.class) return new TaskIterator(new EmptyTask());
+		if (type == Integer.class) return new TaskIterator(new EmptyTask());
+		
 		return new TaskIterator(new ColumnMappingTask(undoSupport, column, serviceRegistrar));   //ColumnMultiMappingTask
 	}
 
