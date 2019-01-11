@@ -93,7 +93,7 @@ public enum MappingSource {
 	// get the list of sources that are available for this species
 	public static List<MappingSource> filteredStrings(Species inSpecies, MappingSource inSource) {	
 		assert(inSpecies != null);
-		if (VERBOSE) System.out.println("+========== fFilteredStrings called: " + inSpecies.common() + " _ " +inSource + " _ " + values().length);
+//		if (VERBOSE) System.out.println("+========== fFilteredStrings called: " + inSpecies.common() + " _ exclude " +inSource + " _ " + values().length);
 		List<MappingSource> matchingSources = new ArrayList<MappingSource>();
 		String srcName = inSource == null ? "" : inSource.name();
 		for (MappingSource src : values())
@@ -105,10 +105,11 @@ public enum MappingSource {
 					matchingSources.add(src);
 			}
 		}
-		if (VERBOSE) System.out.println(inSpecies.common() + " " + srcName);
-
-			
-		if (VERBOSE) System.out.println("Matches: " + matchingSources);
+//		if (VERBOSE) 
+//		{
+//			System.out.println(inSpecies.common() + " " + srcName);
+//			System.out.println("Matches: " + matchingSources);
+//		}
 		return matchingSources;	
 	}
 	
@@ -125,7 +126,7 @@ public enum MappingSource {
 		return pattern.matcher(id).matches();	
 	}
 
-	private static boolean VERBOSE = true;
+	private static boolean VERBOSE = false;
 	private static int N_ITERATIONS = 10;
 
 	public static MappingSource guessSource(Species inSpecies, List<String> names) {
@@ -145,26 +146,25 @@ public enum MappingSource {
 				if (src.matchSpecies(inSpecies) && src.patternMatch(id))
 					counter.put(src, counter.get(src)+1);
 			}
-			int ensemblCt = counter.get(MappingSource.Ensembl);
+			int ensemblCt = counter.get(MappingSource.Ensembl);		// special case of old Ensembl ids
 			if ((inSpecies.isYeast() && id.startsWith("Y")) ||
 					(inSpecies.isFly() && id.startsWith("F")) ||
 						(inSpecies.isWorm() && id.startsWith("W")))
-				counter.put(MappingSource.Ensembl, ensemblCt + 1);
+							counter.put(MappingSource.Ensembl, ensemblCt + 1);
 		}
-		MappingSource maxSrc = null;
+		MappingSource maxSrc = MappingSource.Ensembl;
 		int maxCount = 0;
 		
 		for (MappingSource src : values())
 		{
 			int count = counter.get(src);
-			if (count >= maxCount)  { 	maxCount = count; maxSrc = src;	}		// this favors the earlier in the list
-			if (VERBOSE) 
-				System.out.println(src.descriptor +  " matches " + counter.get(src));
+			if (count > maxCount)  { 	maxCount = count; maxSrc = src;	}		// this favors earlier in the list
+//			if (VERBOSE) 
+//				System.out.println(src.descriptor +  " matches " + counter.get(src));
 		}
 		if (VERBOSE) 
 		{
-			String msg = "No Maximum Source found";
-			if (maxSrc != null) msg = maxSrc.descriptor +  " is maximum with  " + counter.get(maxSrc) + " matches";
+			String msg = maxSrc.descriptor +  " is maximum with  " + counter.get(maxSrc) + " matches";
 			System.out.println(msg);
 		}
 		return maxSrc;
