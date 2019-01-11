@@ -2,6 +2,8 @@
 
 BridgeDB based Identifier mapping
 
+Version 3.6.5 - remove KEGG from MappingSource
+
 Version 3.6.4 - added https support
 
 
