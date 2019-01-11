@@ -15,7 +15,7 @@
 	<artifactId>idmapper</artifactId>
 	<packaging>bundle</packaging>
 	<name>ID Mapper</name>
-	<version>3.6.4</version>
+	<version>3.6.5</version>
 
 	<!-- Links to the Cytoscape Maven repositories. - -->
 	<repositories>
