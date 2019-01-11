@@ -34,7 +34,7 @@ import org.cytoscape.idmapper.MappingSource;
 
 public class BridgeDbIdMapper implements IdMapper {
 
-    public static final String              DEFAULT_MAP_SERVICE_URL_STR = "http://webservice.bridgedb.org";
+    public static final String              DEFAULT_MAP_SERVICE_URL_STR = "https://webservice.bridgedb.org";
 
     public static final boolean             DEBUG                       = true;
 
