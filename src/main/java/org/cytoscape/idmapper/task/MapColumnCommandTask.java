@@ -61,9 +61,7 @@ public final class MapColumnCommandTask extends AbstractTask implements Observab
 //	private final CyJSONUtil cyJSONUtil;
 	
 	@ProvidesTitle
-	public String getTitle() {
-		return "Map Column";
-	}
+	public String getTitle() {		return "Map Column";	}
 	@ContainsTunables
 //	public TableTunable tableTunable = null;
 

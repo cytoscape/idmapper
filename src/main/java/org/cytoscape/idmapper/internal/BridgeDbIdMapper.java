@@ -8,19 +8,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.cytoscape.idmapper.IdGuess;
 import org.cytoscape.idmapper.IdMapper;
 import org.cytoscape.idmapper.IdMapping;
 import org.cytoscape.idmapper.MappingSource;
-
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * An client for the Id Mapping service BridgeDB.

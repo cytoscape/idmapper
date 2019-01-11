@@ -15,8 +15,8 @@ public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory imp
 	private final TunableSetter tunableSetter; 
 
 	public MapColumnTaskFactoryImpl(final UndoSupport undo, final TunableSetter tunable,final CyServiceRegistrar reg) {
-		this.undoSupport = undo;
-		this.tunableSetter = tunable;
+		undoSupport = undo;
+		tunableSetter = tunable;
 		serviceRegistrar = reg;
 	}
 
@@ -26,19 +26,12 @@ public class MapColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory imp
 		if (column == null)
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
 
-		Class<?>	 type = column.getType();
-//		if (type == Double.class) return null;
-//		if (type == Integer.class) return null;
-		return new TaskIterator(new ColumnMappingTask(undoSupport, column, serviceRegistrar));   //ColumnMultiMappingTask
+		return new TaskIterator(new ColumnMappingTask(undoSupport, column, serviceRegistrar));  
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(final CyColumn column, final String newColumnName) {
-	return null;
-//	final Map<String, Object> m = new HashMap<String, Object>();
-//		m.put("newColumnName", newColumnName);
-//
-//		return tunableSetter.createTaskIterator(this.createTaskIterator(column), m); 
+	return createTaskIterator();
 	}
 
 	@Override
