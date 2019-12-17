@@ -30,10 +30,10 @@ public class IdMappingImpl implements IdMapping {
     public final void addSourceId(final String source_id) {        source_ids.add(source_id);    }
     public final void addTargetId(final String target_id) {        target_ids.add(target_id);    }
 
-    @Override    public MappingSource getSourceType() {        return source_type;    }
+    @Override    public MappingSource getSourceType() 			{        return source_type;    }
     public void setSourceType(final MappingSource source_type) {        this.source_type = source_type;    }
 
-    @Override    public String getSourceSpecies() {        return source_species;    }
+    @Override    public String getSourceSpecies() 				{        return source_species;    }
     public void setSourceSpecies(final String source_species) {        this.source_species = source_species;    }
 
     @Override    public MappingSource getTargetType() {        return target_type;    }

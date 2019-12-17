@@ -10,6 +10,7 @@ public enum MappingSource {
 
 //	Unspecified ("Unspecified", "", "", "^[A-Za-z0-9]+", "" ),
 	HGNC ("HGNC", "H", "Homo sapiens", "^[A-Za-z0-9]+", "DAPK1" ),
+	HMDB ("HMDB", "Ch", "", "^[A-Za-z0-9]+", "Trytophan" ),
 	Ensembl ("Ensembl", "En", "", "^ENS[A-Z]*[FPTG]\\d{11}$", "ENSG00000139618"),			//|^[YFW]*$		also accept anything that starts with Y, F, W ??
 	Entrez ("Entrez Gene", "L", "", "^\\d+$", "11234"),
 	FlyBase ("FlyBase", "F", "Drosophila melanogaster", "^FB\\w{2}\\d{7}$", "FBgn0011293"),
