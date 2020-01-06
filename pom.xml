@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<properties>
@@ -20,17 +21,6 @@
 	<!-- Links to the Cytoscape Maven repositories. - -->
 	<repositories>
 		<repository>
-			<id>cytoscape_snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<name>Cytoscape Snapshots</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
-		</repository>
-		<repository>
 			<id>cytoscape_releases</id>
 			<snapshots>
 				<enabled>false</enabled>
@@ -39,7 +29,18 @@
 				<enabled>true</enabled>
 			</releases>
 			<name>Cytoscape Releases</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
+			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
+		</repository>
+		<repository>
+			<id>cytoscape_snapshots</id>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<name>Cytoscape Snapshots</name>
+			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_snapshots/</url>
 		</repository>
 		<repository>
 			<id>apache-repo-releases</id>
@@ -51,23 +52,25 @@
 		<repository>
 			<id>apache_maven2</id>
 			<url>http://repo.maven.apache.org/maven2/</url>
-			<releases><enabled>true</enabled></releases>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
 		</repository>
 	</repositories>
-	
+
 	<distributionManagement>
 		<repository>
-			<id>releases</id>
-			<name>Internal Releases</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/releases</url>
+			<id>cytoscape_releases</id>
+			<name>Cytoscape Releases</name>
+			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
 		</repository>
 		<snapshotRepository>
-			<id>snapshots</id>
-			<name>Internal Snapshots</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots</url>
+			<id>cytoscape_snapshots</id>
+			<name>Cytoscape Snapshots</name>
+			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
-	
+
 	<scm>
 		<connection>scm:https://github.com/cytoscape/idmapper.git</connection>
 		<developerConnection>scm:git@github.com:cytoscape/idmapper.git</developerConnection>
@@ -113,10 +116,10 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 	<dependencies>
 
-	
+
 		<!-- Cytoscape APIs -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -188,7 +191,7 @@
 			<artifactId>webservice-swing-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.ops4j.pax.logging</groupId>
 			<artifactId>pax-logging-api</artifactId>
@@ -199,7 +202,7 @@
 			<artifactId>org.osgi.core</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!-- 3rd party dependencies -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
