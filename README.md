@@ -8,24 +8,23 @@ Version 3.6.5 - remove KEGG from MappingSource
 
 Version 3.6.4 - added https support
 
+This is a Cytoscape app that allows identifier mapping on tables. Once this app is installed, the table browser will respond to a right click on the column header with a pop-up menu containing the item **Map Column...**
 
-This is a Cytoscape app that allows identifier mapping on tables.   Once this app is installed, the table browser will respond to a right click on the column header with a pop-up menu containing the item **Map Column...**  
-
-A dialog is shown to gather the information about the species, and which columns you want to map **From** (the source) and **To** (the target).  By default, multiple return values will be simplified to the first in the list, but turning off the **Force Single** checkbox will maintain all returned IDs.
+A dialog is shown to gather the information about the species, and which columns you want to map **From** (the source) and **To** (the target). By default, multiple return values will be simplified to the first in the list, but turning off the **Force Single** checkbox will maintain all returned IDs.
 
 Once the dialog is confirmed, a new column will be added to the Node Table containing the mapped identifiers.
 
 This version adds support for the command dialog and CyREST access.
 
 '{  
-  "columnName": "name",    
-  "forceSingle": "true",    
-  "mapFrom": "HGNC",  
-  "mapTo": "Ensembl",    
-  "network": "A",    
-  "table": "default node",    
-  "species": "Human (Homo sapiens)"  
-}'  
+ "columnName": "name",  
+ "forceSingle": "true",  
+ "mapFrom": "HGNC",  
+ "mapTo": "Ensembl",  
+ "network": "A",  
+ "table": "default node",  
+ "species": "Human (Homo sapiens)"  
+}'
 
 ## Normalize Identifiers
 
@@ -46,6 +45,8 @@ UniProtKB:P04637
 ```
 
 If the column contains unprefixed identifiers, supply a CURIE prefix in the dialog. Prefixes may be entered with or without the trailing colon, for example `HGNC` or `HGNC:`. Values that already contain a CURIE prefix are sent unchanged, so the prefix is not applied twice. Null and blank values are ignored.
+
+In the Cytoscape desktop dialog, the CURIE prefix field is an editable suggested-value list. Suggestions are loaded from the Node Normalization prefix catalog and displayed with entity counts. If the catalog is unavailable, the field remains editable and manually entered prefixes still work.
 
 The operation creates a scalar String output column containing the canonical identifier returned as the normalized node's primary id. The default output column name is:
 
@@ -110,4 +111,5 @@ idmapper.nodeNormalization.baseUrl=https://nodenormalization-sri.renci.org
 idmapper.nodeNormalization.batchSize=500
 idmapper.nodeNormalization.connectTimeout=10000
 idmapper.nodeNormalization.requestTimeout=30000
+idmapper.nodeNormalization.curiePrefixesCacheTtl=86400000
 ```

@@ -13,11 +13,12 @@ public final class NodeNormalizationProperties {
     public static final String BATCH_SIZE = "idmapper.nodeNormalization.batchSize";
     public static final String CONNECT_TIMEOUT = "idmapper.nodeNormalization.connectTimeout";
     public static final String REQUEST_TIMEOUT = "idmapper.nodeNormalization.requestTimeout";
-
+    public static final String CURIE_PREFIXES_CACHE_TTL = "idmapper.nodeNormalization.curiePrefixesCacheTtl";
     public static final String DEFAULT_BASE_URL = "https://nodenormalization-sri.renci.org";
     public static final int DEFAULT_BATCH_SIZE = 500;
     public static final int DEFAULT_CONNECT_TIMEOUT = 10000;
     public static final int DEFAULT_REQUEST_TIMEOUT = 30000;
+    public static final long DEFAULT_CURIE_PREFIXES_CACHE_TTL = 86400000L;
 
     private NodeNormalizationProperties() {
     }
@@ -34,6 +35,7 @@ public final class NodeNormalizationProperties {
         props.setProperty(BATCH_SIZE, Integer.toString(DEFAULT_BATCH_SIZE));
         props.setProperty(CONNECT_TIMEOUT, Integer.toString(DEFAULT_CONNECT_TIMEOUT));
         props.setProperty(REQUEST_TIMEOUT, Integer.toString(DEFAULT_REQUEST_TIMEOUT));
+        props.setProperty(CURIE_PREFIXES_CACHE_TTL, Long.toString(DEFAULT_CURIE_PREFIXES_CACHE_TTL));
         return props;
     }
 
@@ -82,6 +84,10 @@ public final class NodeNormalizationProperties {
         return getPositiveInt(props, REQUEST_TIMEOUT, DEFAULT_REQUEST_TIMEOUT);
     }
 
+    public static long getCuriePrefixesCacheTtl(final Properties props) {
+        return getPositiveLong(props, CURIE_PREFIXES_CACHE_TTL, DEFAULT_CURIE_PREFIXES_CACHE_TTL);
+    }
+
     /**
      * Returns the value of the given key from the properties, or the default value
      * if
@@ -99,6 +105,16 @@ public final class NodeNormalizationProperties {
         if (value == null || value.trim().isEmpty())
             return defaultValue;
         return value.trim();
+    }
+
+    public static String defaultCuriePrefixesUrl() {
+        return appendPath(DEFAULT_BASE_URL, "get_curie_prefixes");
+    }
+
+    private static String appendPath(final String baseUrl, final String path) {
+        final String cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+        final String cleanPath = path.startsWith("/") ? path.substring(1) : path;
+        return cleanBaseUrl + "/" + cleanPath;
     }
 
     /**
@@ -119,6 +135,20 @@ public final class NodeNormalizationProperties {
             return defaultValue;
         try {
             final int parsed = Integer.parseInt(value.trim());
+            return parsed > 0 ? parsed : defaultValue;
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    private static long getPositiveLong(final Properties props, final String key, final long defaultValue) {
+        if (props == null)
+            return defaultValue;
+        final String value = props.getProperty(key);
+        if (value == null || value.trim().isEmpty())
+            return defaultValue;
+        try {
+            final long parsed = Long.parseLong(value.trim());
             return parsed > 0 ? parsed : defaultValue;
         } catch (NumberFormatException e) {
             return defaultValue;
