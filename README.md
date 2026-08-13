@@ -1,6 +1,8 @@
-#idmapper
+# idmapper
 
 BridgeDB based Identifier mapping
+
+Build requirement: Java 17.
 
 Version 3.6.5 - remove KEGG from MappingSource
 
@@ -24,3 +26,88 @@ This version adds support for the command dialog and CyREST access.
   "table": "default node",    
   "species": "Human (Homo sapiens)"  
 }'  
+
+## Normalize Identifiers
+
+ID Mapper also adds **Normalize Identifiers...** to the Cytoscape table column-header context menu. This operation normalizes identifiers in a scalar String table column using the NCATS Translator Node Normalization Service.
+
+Default service endpoint:
+
+```text
+https://nodenormalization-sri.renci.org
+```
+
+The source column should contain CURIEs such as:
+
+```text
+NCBIGene:7157
+HGNC:11998
+UniProtKB:P04637
+```
+
+If the column contains unprefixed identifiers, supply a CURIE prefix in the dialog. Prefixes may be entered with or without the trailing colon, for example `HGNC` or `HGNC:`. Values that already contain a CURIE prefix are sent unchanged, so the prefix is not applied twice. Null and blank values are ignored.
+
+The operation creates a scalar String output column containing the canonical identifier returned as the normalized node's primary id. The default output column name is:
+
+```text
+idmapper::normalized::<source-column-name>
+```
+
+The output column name is editable before the operation starts. Existing output columns are not reused unless overwrite/reuse is explicitly enabled. Unresolved identifiers are written as null.
+
+Requests are sent to the POST form of `/get_normalized_nodes` in configurable batches. Duplicate identifiers are submitted once and reused for all matching rows.
+
+## Normalize Command
+
+The same feature is available as a Cytoscape command and through CyREST:
+
+```text
+idmapper normalize
+```
+
+Arguments:
+
+```text
+network           Optional network name or SUID; defaults to the current network
+table             Optional target table; defaults to the current node table
+columnName        Required source column containing identifiers
+prefix            Optional CURIE prefix for values without one
+outputColumnName  Optional output column name; defaults to idmapper::normalized::<columnName>
+batchSize         Optional positive integer overriding the configured default
+serviceUrl        Optional per-command service base URL override
+overwrite         Optional boolean allowing reuse of an existing String output column
+```
+
+Example:
+
+```text
+idmapper normalize network=current table="default node" columnName=name prefix=HGNC outputColumnName="idmapper::normalized::name" batchSize=500
+```
+
+The command returns a JSON summary containing row count, submitted unique CURIE count, normalized count, unresolved count, failed batch count, cancellation state, output column name, and errors.
+
+CyREST example:
+
+```bash
+curl -X POST 'http://localhost:1234/v1/commands/idmapper/normalize' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "network": "current",
+    "table": "default node",
+    "columnName": "name",
+    "prefix": "HGNC",
+    "outputColumnName": "idmapper::normalized::name",
+    "batchSize": 500
+  }'
+```
+
+## Node Normalization Properties
+
+The Node Normalization settings are registered as Cytoscape properties and saved in the normal Cytoscape configuration directory:
+
+```text
+idmapper.nodeNormalization.baseUrl=https://nodenormalization-sri.renci.org
+idmapper.nodeNormalization.batchSize=500
+idmapper.nodeNormalization.connectTimeout=10000
+idmapper.nodeNormalization.requestTimeout=30000
+```
