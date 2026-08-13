@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.idmapper.normalization.ApacheNodeNormalizationClient;
+import org.cytoscape.idmapper.normalization.CuriePrefix;
+import org.cytoscape.idmapper.normalization.CuriePrefixValue;
 import org.cytoscape.idmapper.normalization.CurieNormalizer;
 import org.cytoscape.idmapper.normalization.CurieNormalizer.PreparedIdentifiers;
 import org.cytoscape.idmapper.normalization.NodeNormalizationClient;
@@ -34,8 +36,9 @@ public class NormalizeIdentifiersTask extends AbstractTableColumnTask implements
     @Tunable(description = "Source column", gravity = 0.0, longDescription = "Column containing identifiers to normalize")
     public String sourceColumnName;
 
+    @CuriePrefix
     @Tunable(description = "CURIE prefix", gravity = 1.0, longDescription = "Optional CURIE prefix to apply to values without one", exampleStringValue = "HGNC")
-    public String prefix = "";
+    public CuriePrefixValue prefix = new CuriePrefixValue();
 
     @Tunable(description = "Output column name", gravity = 2.0, longDescription = "Column where canonical identifiers will be written")
     public String outputColumnName;
@@ -74,7 +77,8 @@ public class NormalizeIdentifiersTask extends AbstractTableColumnTask implements
     @Override
     public void run(final TaskMonitor taskMonitor) throws Exception {
         taskMonitor.setTitle("Normalize Identifiers");
-        summary = normalize(column.getTable(), sourceColumnName, prefix, outputColumnName, batchSize, serviceUrl,
+        summary = normalize(column.getTable(), sourceColumnName, prefix.getPrefix(), outputColumnName, batchSize,
+                serviceUrl,
                 overwrite,
                 nodeNormalizationProperties, injectedClient, this, taskMonitor);
     }
