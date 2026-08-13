@@ -2,8 +2,13 @@ package org.cytoscape.idmapper.internal;
 
 import java.util.Properties;
 
+import org.cytoscape.idmapper.normalization.NodeNormalizationProperties;
 import org.cytoscape.idmapper.task.MapColumnTaskFactory;
 import org.cytoscape.idmapper.task.MapColumnTaskFactoryImpl;
+import org.cytoscape.idmapper.task.NormalizeIdentifiersTaskFactory;
+import org.cytoscape.idmapper.task.NormalizeIdentifiersTaskFactoryImpl;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableColumnTaskFactory;
@@ -22,6 +27,12 @@ public class CyActivator extends AbstractCyActivator {
         final TunableSetter tunable = getService(bc, TunableSetter.class);
         final CyServiceRegistrar reg = getService(bc, CyServiceRegistrar.class);
         final MapColumnTaskFactory mapColumnTaskFactory = new MapColumnTaskFactoryImpl( undo, tunable, reg);
+        final Properties nodeNormalizationProperties = NodeNormalizationProperties.defaults();
+        final SimpleCyProperty<Properties> nodeNormalizationCyProperty = new SimpleCyProperty<Properties>(
+                NodeNormalizationProperties.PROPERTY_NAME, nodeNormalizationProperties, Properties.class,
+                CyProperty.SavePolicy.CONFIG_DIR);
+        final NormalizeIdentifiersTaskFactory normalizeIdentifiersTaskFactory =
+                new NormalizeIdentifiersTaskFactoryImpl(reg, nodeNormalizationProperties);
 
         final Properties props = new Properties();
         props.setProperty(ServiceProperties.TITLE, "Map column...");
@@ -38,7 +49,25 @@ public class CyActivator extends AbstractCyActivator {
         registerService(bc, mapColumnTaskFactory, TableColumnTaskFactory.class, props);
         registerService(bc, mapColumnTaskFactory, MapColumnTaskFactory.class, props);
         registerService(bc, mapColumnTaskFactory, TaskFactory.class, props);
+
+        final Properties normalizeProps = new Properties();
+        normalizeProps.setProperty(ServiceProperties.TITLE, "Normalize Identifiers...");
+        normalizeProps.setProperty(ServiceProperties.COMMAND, "normalize");
+        normalizeProps.setProperty(ServiceProperties.ENABLE_FOR, "true");
+        normalizeProps.setProperty(ServiceProperties.COMMAND_NAMESPACE, "idmapper");
+        normalizeProps.setProperty(ServiceProperties.COMMAND_DESCRIPTION,
+                "Normalize column identifiers using the NCATS Translator Node Normalization Service");
+        normalizeProps.setProperty(ServiceProperties.COMMAND_SUPPORTS_JSON, "true");
+        normalizeProps.setProperty(ServiceProperties.COMMAND_EXAMPLE_JSON, NORMALIZE_JSON_EXAMPLE);
+        normalizeProps.setProperty(ServiceProperties.COMMAND_LONG_DESCRIPTION,
+                "Normalizes CURIE identifiers to canonical primary identifiers using POST /get_normalized_nodes");
+
+        registerService(bc, nodeNormalizationCyProperty, CyProperty.class, new Properties());
+        registerService(bc, normalizeIdentifiersTaskFactory, TableColumnTaskFactory.class, normalizeProps);
+        registerService(bc, normalizeIdentifiersTaskFactory, NormalizeIdentifiersTaskFactory.class, normalizeProps);
+        registerService(bc, normalizeIdentifiersTaskFactory, TaskFactory.class, normalizeProps);
     }
 	String JSON_EXAMPLE = "{ \"new column\": \"mappedIDs\" }";
+	String NORMALIZE_JSON_EXAMPLE = "{ \"outputColumnName\": \"idmapper::normalized::name\" }";
 
 }
