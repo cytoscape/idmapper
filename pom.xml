@@ -6,8 +6,8 @@
 		<bundle.symbolicName>org.cytoscape.idmapper</bundle.symbolicName>
 		<bundle.namespace>org.cytoscape.idmapper</bundle.namespace>
 		<cytoscape.api.version>3.8.0</cytoscape.api.version>
-		<maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
-		<maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
+		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+		<maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
 		<maven-bundle-plugin.version>5.1.8</maven-bundle-plugin.version>
 		<osgi.api.version>6.0.0</osgi.api.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -85,8 +85,8 @@
 				<version>${maven-compiler-plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
-					<source>11</source>
-					<target>11</target>
+					<source>17</source>
+					<target>17</target>
 					<encoding>UTF-8</encoding>
 					<optimize>true</optimize>
 					<showWarnings>true</showWarnings>
@@ -184,6 +184,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>property-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-util-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
@@ -228,6 +233,12 @@
 			<artifactId>idmapper</artifactId>
 			<version>3.6.3</version>
 			<type>bundle</type>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -286,6 +297,11 @@
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>service-api</artifactId>
+				<version>${cytoscape.api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>property-api</artifactId>
 				<version>${cytoscape.api.version}</version>
 			</dependency>
 			<dependency>
