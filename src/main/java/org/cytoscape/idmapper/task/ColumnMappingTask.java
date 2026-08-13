@@ -35,28 +35,34 @@ import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
 public class ColumnMappingTask extends AbstractTableColumnTask
-								implements  RequestsUIHelper, ListChangeListener<String>, ObservableTask {
+		implements RequestsUIHelper, ListChangeListener<String>, ObservableTask {
 
-
-//	public static final boolean DEBUG = true;
+	// public static final boolean DEBUG = true;
 	public static final boolean VERBOSE = false;
 	private static Species saveSpecies = Species.Human;
 	private static MappingSource saveSource = MappingSource.Entrez;
 	private static MappingSource saveTarget = MappingSource.Entrez;
-	private  final CyServiceRegistrar registrar;
+	private final CyServiceRegistrar registrar;
 
-	class MappingSourceListener implements  ListChangeListener<MappingSource>
-	{
-		MappingSourceListener(ColumnMappingTask task)		{ }
-		@Override	public void listChanged(ListSelection<MappingSource> source) { mappingSourceChanged(source); }
-		@Override	public void selectionChanged(ListSelection<MappingSource> source) { mappingSourceChanged(source); }
+	class MappingSourceListener implements ListChangeListener<MappingSource> {
+		MappingSourceListener(ColumnMappingTask task) {
+		}
+
+		@Override
+		public void listChanged(ListSelection<MappingSource> source) {
+			mappingSourceChanged(source);
+		}
+
+		@Override
+		public void selectionChanged(ListSelection<MappingSource> source) {
+			mappingSourceChanged(source);
+		}
 	}
-	
-	public  	ColumnMappingTask(final UndoSupport undoSupport, final CyColumn column, final CyServiceRegistrar reg) {
+
+	public ColumnMappingTask(final UndoSupport undoSupport, final CyColumn column, final CyServiceRegistrar reg) {
 		super(column);
 		registrar = reg;
-		if (column.getType() == String.class)
-		{
+		if (column.getType() == String.class) {
 			Species.buildMaps();
 			speciesList.setPossibleValues(Species.fullNames());
 			speciesList.addListener(this);
@@ -69,163 +75,171 @@ public class ColumnMappingTask extends AbstractTableColumnTask
 		}
 	}
 
-	
-	public void speciesSelectionChanged(ListSelection<String> source) 
-	{
-		if (source instanceof ListSingleSelection<?>)
-		{
-			ListSingleSelection<String> src = (ListSingleSelection<String>)source;
-			if (src == speciesList)
-			{
+	public void speciesSelectionChanged(ListSelection<String> source) {
+		if (source instanceof ListSingleSelection<?>) {
+			ListSingleSelection<String> src = (ListSingleSelection<String>) source;
+			if (src == speciesList) {
 				String selected = speciesList.getSelectedValue();
 				saveSpecies = Species.lookup(selected);
-				if (VERBOSE) System.out.println("\n\n\nsetting Species to: " + saveSpecies.fullname());
+				if (VERBOSE)
+					System.out.println("\n\n\nsetting Species to: " + saveSpecies.fullname());
 				resetSpecies();
 			}
 		}
 	}
-		
-	//=========================================================================
-	public void mappingSourceChanged(ListSelection<MappingSource> source) 
-	{
-//		String name = null;
-//		if (source == mapFrom) name = "source_selection";
-//		if (source == mapTo) 	name = "target_selection";
-//		System.out.println("selectionChanged: at " + name);
-		
-//		if (VERBOSE) System.out.println("mappingSourceChanged " + source);
-		if (source instanceof ListSingleSelection<?>)
-		{
-			ListSingleSelection<MappingSource> src = (ListSingleSelection<MappingSource>)source;
-			if (src == mapFrom)		resetSource();
-			else if (src == mapTo)
-			{}			//	System.out.println("target is: " + target_selection.getSelectedValue());
+
+	// =========================================================================
+	public void mappingSourceChanged(ListSelection<MappingSource> source) {
+		// String name = null;
+		// if (source == mapFrom) name = "source_selection";
+		// if (source == mapTo) name = "target_selection";
+		// System.out.println("selectionChanged: at " + name);
+
+		// if (VERBOSE) System.out.println("mappingSourceChanged " + source);
+		if (source instanceof ListSingleSelection<?>) {
+			ListSingleSelection<MappingSource> src = (ListSingleSelection<MappingSource>) source;
+			if (src == mapFrom)
+				resetSource();
+			else if (src == mapTo) {
+			} // System.out.println("target is: " + target_selection.getSelectedValue());
 			else
-			System.err.println("selectionChanged error: " + source.toString());
+				System.err.println("selectionChanged error: " + source.toString());
 		}
 	}
-		
-		
+
 	private void resetSpecies() {
 		speciesList.setSelectedValue(saveSpecies.fullname());
 		guessSource();
-	}	
-	private TunableUIHelper helper;
-	
-	private void guessSource() {
-		
-		List<MappingSource> sources = MappingSource.filteredStrings(saveSpecies, null);
-		if (VERBOSE) System.out.println("A guessSource: " + saveSpecies + ": " + sources);
-//		mapFrom.setPossibleValues(new ArrayList<MappingSource>());
-		mapFrom.setPossibleValues(sources);			// THIS CAUSES  mappingSourceChanged
-		if(helper != null)
-			helper.refresh(ColumnMappingTask.this);
-		
-//		if (VERBOSE) {
-//			System.out.println("A.1 mapFrom contains: ");
-//			List<MappingSource> vals = mapFrom.getPossibleValues();
-//			for (MappingSource src : vals)
-//				System.out.println("src: " + src);
-//		}
+	}
 
-		if (column != null)
-		{
+	private TunableUIHelper helper;
+
+	private void guessSource() {
+
+		List<MappingSource> sources = MappingSource.filteredStrings(saveSpecies, null);
+		if (VERBOSE)
+			System.out.println("A guessSource: " + saveSpecies + ": " + sources);
+		// mapFrom.setPossibleValues(new ArrayList<MappingSource>());
+		mapFrom.setPossibleValues(sources); // THIS CAUSES mappingSourceChanged
+		if (helper != null)
+			helper.refresh(ColumnMappingTask.this);
+
+		// if (VERBOSE) {
+		// System.out.println("A.1 mapFrom contains: ");
+		// List<MappingSource> vals = mapFrom.getPossibleValues();
+		// for (MappingSource src : vals)
+		// System.out.println("src: " + src);
+		// }
+
+		if (column != null) {
 			final List<String> ids = column.getValues(String.class);
 			saveSource = MappingSource.guessSource(saveSpecies, ids);
 			if (sources.contains(saveSource))
 				mapFrom.setSelectedValue(saveSource);
-			if (VERBOSE) System.out.println("\nB guessed Source: " + saveSource.getMenuString());
+			if (VERBOSE)
+				System.out.println("\nB guessed Source: " + saveSource.getMenuString());
 			resetSource(sources);
-		}		
+		}
 	}
-	
-	private void resetSource()
-	{
+
+	private void resetSource() {
 		resetSource(mapFrom.getPossibleValues());
 	}
-	
+
 	private void resetSource(List<MappingSource> sources) {
 		saveSource = mapFrom.getSelectedValue();
-//		sources.remove(saveSource);
-		if (VERBOSE) System.out.println("C resettingSource: " + (saveSource == null ? "N/A" : saveSource.descriptor()));
-		resetTarget(saveSource);		//, sources
+		// sources.remove(saveSource);
+		if (VERBOSE)
+			System.out.println("C resettingSource: " + (saveSource == null ? "N/A" : saveSource.descriptor()));
+		resetTarget(saveSource); // , sources
 	}
 
-//=========================================================================
-private void resetTarget(MappingSource src)		//, List<MappingSource> targetList
-{
-	List<MappingSource> targetList = MappingSource.filteredStrings(saveSpecies, src);
-	if (VERBOSE) System.out.println("D0' resetTarget: " + saveSpecies + ": " + src + ": " + targetList);
-	//	filter the targets to remove the source, and anything species-specific
-	saveTarget = mapTo.getSelectedValue();
-	mapTo.setPossibleValues(targetList);
-	if(helper != null)
-		helper.refresh(ColumnMappingTask.this);
-
-	if (saveTarget == null) 
-		saveTarget = MappingSource.Ensembl;
-	if ((!targetList.contains(saveTarget)) && !targetList.isEmpty())
-		saveTarget = targetList.get(0);
-//	List<MappingSource> targetList = MappingSource.filteredStrings(saveSpecies, src);		// exclude src from targetList
-	if (targetList.contains(saveTarget))
+	// =========================================================================
+	private void resetTarget(MappingSource src) // , List<MappingSource> targetList
 	{
-		if (VERBOSE) System.out.println("D1 setSelectedTarget: " + (saveTarget == null ? "N/A" : saveTarget.descriptor()));
-		mapTo.setSelectedValue(saveTarget);
+		List<MappingSource> targetList = MappingSource.filteredStrings(saveSpecies, src);
+		if (VERBOSE)
+			System.out.println("D0' resetTarget: " + saveSpecies + ": " + src + ": " + targetList);
+		// filter the targets to remove the source, and anything species-specific
+		saveTarget = mapTo.getSelectedValue();
+		mapTo.setPossibleValues(targetList);
+		if (helper != null)
+			helper.refresh(ColumnMappingTask.this);
+
+		if (saveTarget == null)
+			saveTarget = MappingSource.Ensembl;
+		if ((!targetList.contains(saveTarget)) && !targetList.isEmpty())
+			saveTarget = targetList.get(0);
+		// List<MappingSource> targetList = MappingSource.filteredStrings(saveSpecies,
+		// src); // exclude src from targetList
+		if (targetList.contains(saveTarget)) {
+			if (VERBOSE)
+				System.out.println("D1 setSelectedTarget: " + (saveTarget == null ? "N/A" : saveTarget.descriptor()));
+			mapTo.setSelectedValue(saveTarget);
+		}
+		if (VERBOSE)
+			System.out.println("D2 resetTarget: " + (saveTarget == null ? "N/A" : saveTarget.descriptor()));
 	}
-	if (VERBOSE) System.out.println("D2 resetTarget: " + (saveTarget == null ? "N/A" : saveTarget.descriptor()));
-}
 
-//=========================================================================
+	// =========================================================================
 	String windowTitle = "ID Mapping";
-	@ProvidesTitle
-	public String getTitle() {		return windowTitle;	}
-	
-	// look at AbstractCyNetworkReader:98 for an example of Tunables with methods
-	@Tunable(description="Species", gravity=0.0, longDescription="The common or latin name of the species to which the identifiers apply",exampleStringValue = "Homo Sapiens")
-	public ListSingleSelection<String> speciesList  =  new ListSingleSelection<String>(Species.fullNames());
 
-	@Tunable(description="Map from", gravity=1.0, longDescription="Specifies the data source describing the existing identifiers", exampleStringValue="ENSEMBL")
+	@ProvidesTitle
+	public String getTitle() {
+		return windowTitle;
+	}
+
+	// look at AbstractCyNetworkReader:98 for an example of Tunables with methods
+	@Tunable(description = "Species", gravity = 0.0, longDescription = "The common or latin name of the species to which the identifiers apply", exampleStringValue = "Homo Sapiens")
+	public ListSingleSelection<String> speciesList = new ListSingleSelection<String>(Species.fullNames());
+
+	@Tunable(description = "Map from", gravity = 1.0, longDescription = "Specifies the data source describing the existing identifiers", exampleStringValue = "ENSEMBL")
 	public ListSingleSelection<MappingSource> mapFrom = new ListSingleSelection<MappingSource>();
 
-	@Tunable(description="To", gravity=2.0, longDescription="Specifies the data source identifiers to be returned as a result in a new column", exampleStringValue="Entrez")
-	public ListSingleSelection<MappingSource> mapTo	= new ListSingleSelection<MappingSource>();
+	@Tunable(description = "To", gravity = 2.0, longDescription = "Specifies the data source identifiers to be returned as a result in a new column", exampleStringValue = "Entrez")
+	public ListSingleSelection<MappingSource> mapTo = new ListSingleSelection<MappingSource>();
 
-	@Tunable(description="Force single ", gravity=3.0, longDescription="When multiple identifiers can be mapped from a single term, this forces a singular result", exampleStringValue="false")
+	@Tunable(description = "Force single ", gravity = 3.0, longDescription = "When multiple identifiers can be mapped from a single term, this forces a singular result", exampleStringValue = "false")
 	public boolean forceSingle = true;
-	
-	//------------------------------------------------------------------------
+
+	// ------------------------------------------------------------------------
 	public String new_column_name = "";
 	public String ERROR = "Can't map this column type as identifiers";
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		
+
 		String species = speciesList.getSelectedValue();
 		MappingSource rawTarget = mapTo.getSelectedValue();
 		MappingSource source = mapFrom.getSelectedValue();
-		if (column.getType() ==  Double.class || column.getType() ==  Integer.class || column.getType() ==  Boolean.class)
-		{
+		if (column.getType() == Double.class || column.getType() == Integer.class
+				|| column.getType() == Boolean.class) {
 			windowTitle = ERROR;
-			if (VERBOSE) 
-				System.out.println(ERROR);		// tell the user?
+			if (VERBOSE)
+				System.out.println(ERROR); // tell the user?
 			SwingUtilities.invokeLater(new Runnable() {
-				@Override public void run() {
+				@Override
+				public void run() {
 					JOptionPane.showMessageDialog(null, ERROR, "ID Mapping Result", JOptionPane.WARNING_MESSAGE);
-				} });
+				}
+			});
 			return;
 		}
-		if (VERBOSE) System.out.println("raw str: " + rawTarget);
+		if (VERBOSE)
+			System.out.println("raw str: " + rawTarget);
 		saveTarget = rawTarget;
-		if (VERBOSE) System.out.println("reading target as " + saveTarget);
+		if (VERBOSE)
+			System.out.println("reading target as " + saveTarget);
 		saveSpecies = Species.lookup(species);
-		if (VERBOSE) System.out.println("saving species as " + saveSpecies.name());
+		if (VERBOSE)
+			System.out.println("saving species as " + saveSpecies.name());
 		boolean source_is_list = false;
 		if (column.getType() == List.class)
 			source_is_list = true;
-		
+
 		storeSpeciesIntoNetworkTable();
-	
+
 		final List values = column.getValues(column.getType());
 
 		final List<String> ids = new ArrayList<String>();
@@ -250,7 +264,8 @@ private void resetTarget(MappingSource src)		//, List<MappingSource> targetList
 			unmatched_ids = map.getUnmatchedIds();
 		} catch (final Exception e) {
 			SwingUtilities.invokeLater(new Runnable() {
-				@Override public void run() {
+				@Override
+				public void run() {
 					JOptionPane.showMessageDialog(null, e.getMessage(), "ID Mapping Error", JOptionPane.ERROR_MESSAGE);
 				}
 			});
@@ -260,12 +275,14 @@ private void resetTarget(MappingSource src)		//, List<MappingSource> targetList
 		if (VERBOSE) {
 			System.out.println();
 			System.out.println("Unmatched:");
-			if (unmatched_ids != null) 
-				for (final String u : unmatched_ids) 	System.out.println(u);
+			if (unmatched_ids != null)
+				for (final String u : unmatched_ids)
+					System.out.println(u);
 			System.out.println();
 			System.out.println("Matched:");
-			if (matched_ids != null) 
-				for (final String u : matched_ids) 		System.out.println(u);
+			if (matched_ids != null)
+				for (final String u : matched_ids)
+					System.out.println(u);
 			System.out.println();
 		}
 		new_column_name = saveTarget.descriptor();
@@ -285,46 +302,47 @@ private void resetTarget(MappingSource src)		//, List<MappingSource> targetList
 					if (v.size() > 1) {
 						all_unique = false;
 						++non_unique;
-						if (v.size() > max)		max = v.size();
-						if (v.size() < min)		min = v.size();
+						if (v.size() > max)
+							max = v.size();
+						if (v.size() < min)
+							min = v.size();
 					} else
 						++unique;
 				}
 			}
 
 		final CyTable table = column.getTable();
-		
-// TODO -- #3666 add the new column after the original, not at end of table
-//		int index = getColumnIndex(table, column);
-//		System.out.println("Index = " + index);
-		
-		
+
+		// TODO -- #3666 add the new column after the original, not at end of table
+		// int index = getColumnIndex(table, column);
+		// System.out.println("Index = " + index);
+
 		boolean many_to_one = false;
 		if (matched_ids.size() > 0) {
 			boolean all_single = false;
-			if (forceSingle) 
-				table.createColumn(new_column_name, String.class, false);	//index, 
-			else {  
+			if (forceSingle)
+				table.createColumn(new_column_name, String.class, false); // index,
+			else {
 				all_single = MappingUtil.isAllSingle(source_is_list, res, column, table);
-				if (all_single) 
-					table.createColumn(new_column_name, String.class, false);		//index, 
-				 else 
-					table.createListColumn(new_column_name, String.class, false);	//index, 
+				if (all_single)
+					table.createColumn(new_column_name, String.class, false); // index,
+				else
+					table.createListColumn(new_column_name, String.class, false); // index,
 			}
 			many_to_one = MappingUtil.fillNewColumn(source_is_list, res, table, column, new_column_name,
 					forceSingle || all_single);
 
-//			moveLastColumnTo(table, index+1);
-//			System.out.println("moveLastColumnTo " + (index+1));
+			// moveLastColumnTo(table, index+1);
+			// System.out.println("moveLastColumnTo " + (index+1));
 		}
 		String targ = saveTarget.descriptor();
 		String src = source.descriptor();
 		final String msg = MappingUtil.createMsg(new_column_name, targ, src, ids, matched_ids, all_unique, non_unique,
 				unique, min, max, many_to_one, forceSingle);
 
-//		taskMonitor.showMessage(TaskMonitor.Level.INFO, msg);
+		// taskMonitor.showMessage(TaskMonitor.Level.INFO, msg);
 
-//		putSpeciesProperty(saveSpecies.name());
+		// putSpeciesProperty(saveSpecies.name());
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -334,111 +352,116 @@ private void resetTarget(MappingSource src)		//, List<MappingSource> targetList
 		});
 
 	}
+
 	@Override
 	public void listChanged(ListSelection<String> source) {
 		speciesSelectionChanged(source);
 	}
+
 	@Override
 	public void selectionChanged(ListSelection<String> source) {
 		speciesSelectionChanged(source);
 
 	}
-	//=========================================================================
-	private String readSpeciesFromNetworkTable() 		
-	{
+
+	// =========================================================================
+	private String readSpeciesFromNetworkTable() {
 		String speciesStr = getValueFromNetworkTable("idmapper.species");
-		if (speciesStr != null)
-		{
-			Species sp = Species.lookup(speciesStr);		// matches name or common or latin
-			if (VERBOSE) System.out.println("read as " + sp);
+		if (speciesStr != null) {
+			Species sp = Species.lookup(speciesStr); // matches name or common or latin
+			if (VERBOSE)
+				System.out.println("read as " + sp);
 			if (sp != null)
 				saveSpecies = sp;
 		}
-		if (VERBOSE) System.out.println("saveSpecies read as " + saveSpecies.fullname());
+		if (VERBOSE)
+			System.out.println("saveSpecies read as " + saveSpecies.fullname());
 		return saveSpecies.fullname();
-		
-	}		
-	public void storeSpeciesIntoNetworkTable()
-	{
+
+	}
+
+	public void storeSpeciesIntoNetworkTable() {
 		putValueIntoNetworkTable("idmapper.species", saveSpecies.toString());
 	}
 
-	//=========================================================================
-	private String getValueFromNetworkTable(String key) 		
-	{
-		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
+	// =========================================================================
+	private String getValueFromNetworkTable(String key) {
+		CyNetwork network = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		CyTable networkTable = network.getDefaultNetworkTable();
 		List<CyRow> rows = networkTable.getAllRows();
-		if (rows.isEmpty()) return null;
+		if (rows.isEmpty())
+			return null;
 		CyRow row = rows.get(0);
 		return row.get(key, String.class);
 	}
-	
-	private void putValueIntoNetworkTable(String key, String value) 		
-	{
-		CyNetwork network  = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
+
+	private void putValueIntoNetworkTable(String key, String value) {
+		CyNetwork network = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		CyTable networkTable = network.getDefaultNetworkTable();
-		if (networkTable != null )
-		{
+		if (networkTable != null) {
 			CyColumn col = networkTable.getColumn(key);
 			if (col == null)
-				networkTable.createColumn(key, String.class, false); 
+				networkTable.createColumn(key, String.class, false);
 		}
 		List<CyRow> rows = networkTable.getAllRows();
-		if (rows.isEmpty()) 
-		{
+		if (rows.isEmpty()) {
 			return;
 		}
 		CyRow row = rows.get(0);
 		row.set(key, value);
 	}
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 
 	@Override
 	public void setUIHelper(TunableUIHelper helper) {
-		if (VERBOSE) System.out.println("setUIHelper");
+		if (VERBOSE)
+			System.out.println("setUIHelper");
 		this.helper = helper;
 	}
 
+	// #3666
+	// private void moveLastColumnTo(CyTable table, int index) {
+	// JTable nativeTable = table.
+	// Collection<CyColumn> cols = table.getColumnModel();
+	// if (cols instanceof ArrayList)
+	// {
+	// List<CyColumn> colList = (ArrayList<CyColumn>) cols;
+	// CyColumn lastCol = colList.get(colList.size()-1);
+	// colList.remove(lastCol);
+	// colList.add(index, lastCol);
+	// }
+	// }
 
-	//	 #3666
-// 	private void moveLastColumnTo(CyTable table, int index) {
-//		JTable nativeTable = table.
-//		Collection<CyColumn> cols = table.getColumnModel();
-//		if (cols instanceof ArrayList)
-//		{
-//			List<CyColumn> colList = (ArrayList<CyColumn>) cols;
-//			CyColumn lastCol = colList.get(colList.size()-1);
-//			colList.remove(lastCol);
-//			colList.add(index, lastCol);
-//		}
-//	}
+	// private int getColumnIndex(CyTable table, CyColumn column) {
+	// Collection<CyColumn> cols = table.getColumns();
+	// if (cols instanceof ArrayList)
+	// {
+	// List<CyColumn> colList = (ArrayList<CyColumn>) cols;
+	// for (int i=0; i < colList.size(); i++)
+	// {
+	// CyColumn col = colList.get(i);
+	// if (col == column)
+	// return i;
+	// }
+	// }
+	// return -1;
+	// }
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, JSONResult.class);
+	}
 
-//	private int getColumnIndex(CyTable table, CyColumn column) {
-//		Collection<CyColumn> cols = table.getColumns();
-//		if (cols instanceof ArrayList)
-//		{
-//			List<CyColumn> colList = (ArrayList<CyColumn>) cols;
-//			for (int i=0; i < colList.size(); i++)
-//			{
-//				CyColumn col = colList.get(i);
-//				if (col == column)
-//					return i;
-//			}
-//		}
-//		return -1;
-//	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
 	public Object getResults(Class requestedType) {
-		if (requestedType.equals(String.class))			return new_column_name;
-		if (requestedType.equals(JSONResult.class)) 
-		{
-			JSONResult res = () -> { if (new_column_name == null) 		return "{ }";
+		if (requestedType.equals(String.class))
 			return new_column_name;
-		};
-		return res;
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (new_column_name == null)
+					return "{ }";
+				return new_column_name;
+			};
+			return res;
 		}
 		return null;
-		}
+	}
 
 }
