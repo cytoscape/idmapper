@@ -2,6 +2,9 @@ package org.cytoscape.idmapper.internal;
 
 import java.util.Properties;
 
+import org.cytoscape.idmapper.internal.ui.CuriePrefixTunableHandlerFactory;
+import org.cytoscape.idmapper.normalization.ApacheCuriePrefixCatalogClient;
+import org.cytoscape.idmapper.normalization.CuriePrefixCatalog;
 import org.cytoscape.idmapper.normalization.NodeNormalizationProperties;
 import org.cytoscape.idmapper.task.MapColumnTaskFactory;
 import org.cytoscape.idmapper.task.MapColumnTaskFactoryImpl;
@@ -15,6 +18,7 @@ import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableSetter;
+import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
@@ -31,6 +35,12 @@ public class CyActivator extends AbstractCyActivator {
         final SimpleCyProperty<Properties> nodeNormalizationCyProperty = new SimpleCyProperty<Properties>(
                 NodeNormalizationProperties.PROPERTY_NAME, nodeNormalizationProperties, Properties.class,
                 CyProperty.SavePolicy.CONFIG_DIR);
+        final CuriePrefixCatalog curiePrefixCatalog = new CuriePrefixCatalog(
+                new ApacheCuriePrefixCatalogClient(
+                        NodeNormalizationProperties.getCuriePrefixesUrl(nodeNormalizationProperties),
+                        NodeNormalizationProperties.getConnectTimeout(nodeNormalizationProperties),
+                        NodeNormalizationProperties.getRequestTimeout(nodeNormalizationProperties)),
+                NodeNormalizationProperties.getCuriePrefixesCacheTtl(nodeNormalizationProperties));
         final NormalizeIdentifiersTaskFactory normalizeIdentifiersTaskFactory =
                 new NormalizeIdentifiersTaskFactoryImpl(reg, nodeNormalizationProperties);
 
@@ -63,6 +73,8 @@ public class CyActivator extends AbstractCyActivator {
                 "Normalizes CURIE identifiers to canonical primary identifiers using POST /get_normalized_nodes");
 
         registerService(bc, nodeNormalizationCyProperty, CyProperty.class, new Properties());
+        registerService(bc, new CuriePrefixTunableHandlerFactory(curiePrefixCatalog), GUITunableHandlerFactory.class,
+                new Properties());
         registerService(bc, normalizeIdentifiersTaskFactory, TableColumnTaskFactory.class, normalizeProps);
         registerService(bc, normalizeIdentifiersTaskFactory, NormalizeIdentifiersTaskFactory.class, normalizeProps);
         registerService(bc, normalizeIdentifiersTaskFactory, TaskFactory.class, normalizeProps);
