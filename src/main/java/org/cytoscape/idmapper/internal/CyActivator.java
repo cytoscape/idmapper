@@ -45,7 +45,7 @@ public class CyActivator extends AbstractCyActivator {
                                                                 .getRequestTimeout(nodeNormalizationProperties)),
                                 NodeNormalizationProperties.getCuriePrefixesCacheTtl(nodeNormalizationProperties));
                 final NormalizeIdentifiersTaskFactory normalizeIdentifiersTaskFactory = new NormalizeIdentifiersTaskFactoryImpl(
-                                reg, nodeNormalizationProperties);
+                                reg, nodeNormalizationProperties, curiePrefixCatalog);
 
                 final Properties props = new Properties();
                 props.setProperty(ServiceProperties.TITLE, "Map column...");

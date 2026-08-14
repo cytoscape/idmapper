@@ -6,6 +6,8 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
+import org.cytoscape.idmapper.normalization.CuriePrefixCatalog;
+import org.cytoscape.idmapper.normalization.NodeNormalizationProperties;
 import org.cytoscape.idmapper.normalization.NormalizeIdentifiersSummary;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
@@ -21,6 +23,7 @@ public class NormalizeIdentifiersCommandTask extends AbstractTask implements Obs
 
     private final CyServiceRegistrar serviceRegistrar;
     private final Properties nodeNormalizationProperties;
+    private final CuriePrefixCatalog curiePrefixCatalog;
     private NormalizeIdentifiersSummary summary = new NormalizeIdentifiersSummary();
 
     @Tunable(description = "Network", context = "nogui",
@@ -56,10 +59,19 @@ public class NormalizeIdentifiersCommandTask extends AbstractTask implements Obs
             longDescription = "Whether an existing String output column may be reused")
     public boolean overwrite = false;
 
+    @Tunable(description = "Guess prefix", context = "nogui",
+            longDescription = "Try suggested CURIE prefixes for values that do not already have a CURIE prefix")
+    public boolean guessPrefix = false;
+
+    @Tunable(description = "Maximum prefix guesses", context = "nogui",
+            longDescription = "Maximum number of guessed prefixes to try for each unprefixed value")
+    public int maxPrefixGuesses = -1;
+
     public NormalizeIdentifiersCommandTask(final CyServiceRegistrar serviceRegistrar,
-            final Properties nodeNormalizationProperties) {
+            final Properties nodeNormalizationProperties, final CuriePrefixCatalog curiePrefixCatalog) {
         this.serviceRegistrar = serviceRegistrar;
         this.nodeNormalizationProperties = nodeNormalizationProperties;
+        this.curiePrefixCatalog = curiePrefixCatalog;
     }
 
     @ProvidesTitle
@@ -74,13 +86,18 @@ public class NormalizeIdentifiersCommandTask extends AbstractTask implements Obs
                 ? NormalizeIdentifiersTask.defaultOutputColumnName(columnName)
                 : outputColumnName;
         final int resolvedBatchSize = batchSize == -1
-                ? org.cytoscape.idmapper.normalization.NodeNormalizationProperties.getBatchSize(nodeNormalizationProperties)
+                ? NodeNormalizationProperties.getBatchSize(nodeNormalizationProperties)
                 : batchSize;
+        final int resolvedMaxPrefixGuesses = maxPrefixGuesses == -1
+                ? NodeNormalizationProperties.getMaxPrefixGuesses(nodeNormalizationProperties)
+                : maxPrefixGuesses;
 
         final NormalizeIdentifiersTask adapter = new NormalizeIdentifiersTask(targetTable.getColumn(columnName),
-                nodeNormalizationProperties);
+                nodeNormalizationProperties, null, curiePrefixCatalog);
         summary = NormalizeIdentifiersTask.normalize(targetTable, columnName, prefix, resolvedOutputColumnName,
-                resolvedBatchSize, serviceUrl, overwrite, nodeNormalizationProperties, null, adapter, taskMonitor);
+                resolvedBatchSize, serviceUrl, overwrite, guessPrefix, resolvedMaxPrefixGuesses,
+                NodeNormalizationProperties.getUseIdentifierFormatFilters(nodeNormalizationProperties),
+                nodeNormalizationProperties, null, curiePrefixCatalog, adapter, taskMonitor);
     }
 
     private CyTable resolveTable() {

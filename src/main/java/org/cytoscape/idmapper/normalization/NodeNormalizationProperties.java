@@ -14,10 +14,15 @@ public final class NodeNormalizationProperties {
     public static final String CONNECT_TIMEOUT = "idmapper.nodeNormalization.connectTimeout";
     public static final String REQUEST_TIMEOUT = "idmapper.nodeNormalization.requestTimeout";
     public static final String CURIE_PREFIXES_CACHE_TTL = "idmapper.nodeNormalization.curiePrefixesCacheTtl";
+    public static final String MAX_PREFIX_GUESSES = "idmapper.nodeNormalization.maxPrefixGuesses";
+    public static final String USE_IDENTIFIER_FORMAT_FILTERS =
+            "idmapper.nodeNormalization.useIdentifierFormatFilters";
     public static final String DEFAULT_BASE_URL = "https://nodenormalization-sri.renci.org";
     public static final int DEFAULT_BATCH_SIZE = 500;
     public static final int DEFAULT_CONNECT_TIMEOUT = 10000;
     public static final int DEFAULT_REQUEST_TIMEOUT = 30000;
+    public static final int DEFAULT_MAX_PREFIX_GUESSES = 25;
+    public static final boolean DEFAULT_USE_IDENTIFIER_FORMAT_FILTERS = true;
     public static final long DEFAULT_CURIE_PREFIXES_CACHE_TTL = 86400000L;
 
     private NodeNormalizationProperties() {
@@ -36,6 +41,8 @@ public final class NodeNormalizationProperties {
         props.setProperty(CONNECT_TIMEOUT, Integer.toString(DEFAULT_CONNECT_TIMEOUT));
         props.setProperty(REQUEST_TIMEOUT, Integer.toString(DEFAULT_REQUEST_TIMEOUT));
         props.setProperty(CURIE_PREFIXES_CACHE_TTL, Long.toString(DEFAULT_CURIE_PREFIXES_CACHE_TTL));
+        props.setProperty(MAX_PREFIX_GUESSES, Integer.toString(DEFAULT_MAX_PREFIX_GUESSES));
+        props.setProperty(USE_IDENTIFIER_FORMAT_FILTERS, Boolean.toString(DEFAULT_USE_IDENTIFIER_FORMAT_FILTERS));
         return props;
     }
 
@@ -86,6 +93,14 @@ public final class NodeNormalizationProperties {
 
     public static long getCuriePrefixesCacheTtl(final Properties props) {
         return getPositiveLong(props, CURIE_PREFIXES_CACHE_TTL, DEFAULT_CURIE_PREFIXES_CACHE_TTL);
+    }
+
+    public static int getMaxPrefixGuesses(final Properties props) {
+        return getPositiveInt(props, MAX_PREFIX_GUESSES, DEFAULT_MAX_PREFIX_GUESSES);
+    }
+
+    public static boolean getUseIdentifierFormatFilters(final Properties props) {
+        return getBoolean(props, USE_IDENTIFIER_FORMAT_FILTERS, DEFAULT_USE_IDENTIFIER_FORMAT_FILTERS);
     }
 
     /**
@@ -153,5 +168,14 @@ public final class NodeNormalizationProperties {
         } catch (NumberFormatException e) {
             return defaultValue;
         }
+    }
+
+    private static boolean getBoolean(final Properties props, final String key, final boolean defaultValue) {
+        if (props == null)
+            return defaultValue;
+        final String value = props.getProperty(key);
+        if (value == null || value.trim().isEmpty())
+            return defaultValue;
+        return Boolean.parseBoolean(value.trim());
     }
 }

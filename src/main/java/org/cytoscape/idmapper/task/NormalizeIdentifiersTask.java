@@ -8,14 +8,18 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.idmapper.normalization.ApacheNodeNormalizationClient;
+import org.cytoscape.idmapper.normalization.CurieCandidatePlan;
+import org.cytoscape.idmapper.normalization.CurieCandidatePlanner;
 import org.cytoscape.idmapper.normalization.CuriePrefix;
+import org.cytoscape.idmapper.normalization.CuriePrefixCatalog;
 import org.cytoscape.idmapper.normalization.CuriePrefixValue;
 import org.cytoscape.idmapper.normalization.CurieNormalizer;
-import org.cytoscape.idmapper.normalization.CurieNormalizer.PreparedIdentifiers;
+import org.cytoscape.idmapper.normalization.IdentifierFormatClassifier;
 import org.cytoscape.idmapper.normalization.NodeNormalizationClient;
 import org.cytoscape.idmapper.normalization.NodeNormalizationException;
 import org.cytoscape.idmapper.normalization.NodeNormalizationProperties;
 import org.cytoscape.idmapper.normalization.NodeNormalizationResult;
+import org.cytoscape.idmapper.normalization.PreparedIdentifier;
 import org.cytoscape.idmapper.normalization.NormalizeIdentifiersSummary;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
@@ -31,6 +35,7 @@ public class NormalizeIdentifiersTask extends AbstractTableColumnTask implements
 
     private final Properties nodeNormalizationProperties;
     private final NodeNormalizationClient injectedClient;
+    private final CuriePrefixCatalog curiePrefixCatalog;
     private NormalizeIdentifiersSummary summary = new NormalizeIdentifiersSummary();
 
     @Tunable(description = "Source column", gravity = 0.0, longDescription = "Column containing identifiers to normalize")
@@ -46,26 +51,34 @@ public class NormalizeIdentifiersTask extends AbstractTableColumnTask implements
     @Tunable(description = "Batch size", gravity = 3.0, longDescription = "Number of unique identifiers sent in each request")
     public int batchSize;
 
-    @Tunable(description = "Service endpoint", gravity = 4.0, longDescription = "Node Normalization base URL")
+    @Tunable(description = "Guess CURIE prefix for unprefixed values", gravity = 4.0, longDescription = "Try suggested prefixes for values that do not already have a CURIE prefix")
+    public boolean guessPrefix = false;
+
+    @Tunable(description = "Maximum prefix guesses", gravity = 5.0, longDescription = "Maximum number of guessed prefixes to try for each unprefixed value")
+    public int maxPrefixGuesses;
+
+    @Tunable(description = "Service endpoint", gravity = 6.0, longDescription = "Node Normalization base URL")
     public String serviceUrl;
 
-    @Tunable(description = "Overwrite existing output column", gravity = 5.0, longDescription = "Allow reuse of an existing String output column")
+    @Tunable(description = "Overwrite existing output column", gravity = 7.0, longDescription = "Allow reuse of an existing String output column")
     public boolean overwrite = false;
 
     public NormalizeIdentifiersTask(final CyColumn column, final Properties nodeNormalizationProperties) {
-        this(column, nodeNormalizationProperties, null);
+        this(column, nodeNormalizationProperties, null, null);
     }
 
     public NormalizeIdentifiersTask(final CyColumn column, final Properties nodeNormalizationProperties,
-            final NodeNormalizationClient injectedClient) {
+            final NodeNormalizationClient injectedClient, final CuriePrefixCatalog curiePrefixCatalog) {
         super(column);
         this.nodeNormalizationProperties = nodeNormalizationProperties;
         this.injectedClient = injectedClient;
+        this.curiePrefixCatalog = curiePrefixCatalog;
         if (column != null) {
             sourceColumnName = column.getName();
             outputColumnName = defaultOutputColumnName(column.getName());
         }
         batchSize = NodeNormalizationProperties.getBatchSize(nodeNormalizationProperties);
+        maxPrefixGuesses = NodeNormalizationProperties.getMaxPrefixGuesses(nodeNormalizationProperties);
         serviceUrl = NodeNormalizationProperties.getBaseUrl(nodeNormalizationProperties);
     }
 
@@ -78,15 +91,17 @@ public class NormalizeIdentifiersTask extends AbstractTableColumnTask implements
     public void run(final TaskMonitor taskMonitor) throws Exception {
         taskMonitor.setTitle("Normalize Identifiers");
         summary = normalize(column.getTable(), sourceColumnName, prefix.getPrefix(), outputColumnName, batchSize,
-                serviceUrl,
-                overwrite,
-                nodeNormalizationProperties, injectedClient, this, taskMonitor);
+                serviceUrl, overwrite, guessPrefix, maxPrefixGuesses,
+                NodeNormalizationProperties.getUseIdentifierFormatFilters(nodeNormalizationProperties),
+                nodeNormalizationProperties, injectedClient, curiePrefixCatalog, this, taskMonitor);
     }
 
     static NormalizeIdentifiersSummary normalize(final CyTable table, final String sourceColumnName,
             final String prefix,
             final String outputColumnName, final int batchSize, final String serviceUrl, final boolean overwrite,
+            final boolean guessPrefix, final int maxPrefixGuesses, final boolean useIdentifierFormatFilters,
             final Properties properties, final NodeNormalizationClient injectedClient,
+            final CuriePrefixCatalog curiePrefixCatalog,
             final NormalizeIdentifiersTask task,
             final TaskMonitor taskMonitor) throws Exception {
         final NormalizeIdentifiersSummary summary = new NormalizeIdentifiersSummary();
@@ -99,6 +114,8 @@ public class NormalizeIdentifiersTask extends AbstractTableColumnTask implements
             throw new IllegalArgumentException("Source column name is required");
         if (batchSize <= 0)
             throw new IllegalArgumentException("Batch size must be a positive integer");
+        if (maxPrefixGuesses <= 0)
+            throw new IllegalArgumentException("Maximum prefix guesses must be a positive integer");
 
         String normalizedPrefix = CurieNormalizer.normalizePrefix(prefix);
 
@@ -113,9 +130,16 @@ public class NormalizeIdentifiersTask extends AbstractTableColumnTask implements
         for (final CyRow row : rows)
             sourceValues.add(row.get(sourceColumn.getName(), String.class));
 
-        final PreparedIdentifiers prepared = CurieNormalizer.prepare(sourceValues, normalizedPrefix);
-        summary.setRowsExamined(prepared.getRowsExamined());
-        summary.setUniqueCuriesSubmitted(prepared.getUniqueCuries().size());
+        final CurieCandidatePlan plan = new CurieCandidatePlanner(new IdentifierFormatClassifier()).plan(sourceValues,
+                normalizedPrefix, guessPrefix,
+                guessPrefix && curiePrefixCatalog != null ? curiePrefixCatalog.getSuggestions()
+                        : java.util.Collections.emptyList(),
+                maxPrefixGuesses, useIdentifierFormatFilters);
+        summary.setRowsExamined(plan.getRowsExamined());
+        summary.setRowsWithPrefixGuesses(plan.getRowsWithPrefixGuesses());
+        summary.setRowsWithFormatFilteredGuesses(plan.getRowsWithFormatFilteredGuesses());
+        summary.setCandidateCuriesSubmitted(plan.getCandidateCuriesSubmitted());
+        summary.setUniqueCuriesSubmitted(plan.getUniqueCandidateCuries().size());
 
         final NodeNormalizationClient client = injectedClient == null
                 ? new ApacheNodeNormalizationClient(resolveServiceUrl(serviceUrl, properties),
@@ -124,7 +148,7 @@ public class NormalizeIdentifiersTask extends AbstractTableColumnTask implements
                 : injectedClient;
 
         final Map<String, NodeNormalizationResult> allResults = new LinkedHashMap<String, NodeNormalizationResult>();
-        final List<List<String>> batches = CurieNormalizer.splitBatches(prepared.getUniqueCuries(), batchSize);
+        final List<List<String>> batches = CurieNormalizer.splitBatches(plan.getUniqueCandidateCuries(), batchSize);
         for (int i = 0; i < batches.size(); i++) {
             if (task != null && task.cancelled) {
                 summary.setCancelled(true);
@@ -144,20 +168,14 @@ public class NormalizeIdentifiersTask extends AbstractTableColumnTask implements
             taskMonitor.setProgress(batches.isEmpty() ? 1.0d : (double) (i + 1) / (double) batches.size());
         }
 
-        int resolved = 0;
-        int unresolved = 0;
-        for (final String curie : prepared.getUniqueCuries()) {
-            final NodeNormalizationResult result = allResults.get(curie);
-            if (result != null && result.isResolved())
-                resolved++;
-            else
-                unresolved++;
-        }
+        final Map<Integer, NodeNormalizationResult> selectedResults = selectRowResults(plan, allResults);
+        int resolved = selectedResults.size();
+        int unresolved = plan.getPreparedIdentifiers().size() - resolved;
         summary.setSuccessfullyNormalized(resolved);
         summary.setUnresolved(unresolved);
 
         if (!summary.isCancelled())
-            writeOutput(table, rows, cleanOutputColumn, overwrite, prepared, allResults);
+            writeOutput(table, rows, cleanOutputColumn, overwrite, plan, selectedResults);
 
         taskMonitor.setProgress(1.0d);
         taskMonitor.setStatusMessage(summary.toHumanString());
@@ -202,27 +220,38 @@ public class NormalizeIdentifiersTask extends AbstractTableColumnTask implements
             throw new IllegalArgumentException("Existing output column is not a String column: " + outputColumnName);
     }
 
-    private static void writeOutput(final CyTable table, final List<CyRow> rows, final String outputColumnName,
-            final boolean overwrite, final PreparedIdentifiers prepared,
+    private static Map<Integer, NodeNormalizationResult> selectRowResults(final CurieCandidatePlan plan,
             final Map<String, NodeNormalizationResult> results) {
+        final Map<Integer, NodeNormalizationResult> selected = new LinkedHashMap<Integer, NodeNormalizationResult>();
+        for (final PreparedIdentifier preparedIdentifier : plan.getPreparedIdentifiers()) {
+            for (final String curie : preparedIdentifier.getCandidateCuries()) {
+                final NodeNormalizationResult result = results.get(curie);
+                if (result != null && result.isResolved()) {
+                    selected.put(Integer.valueOf(preparedIdentifier.getRowIndex()), result);
+                    break;
+                }
+            }
+        }
+        return selected;
+    }
+
+    private static void writeOutput(final CyTable table, final List<CyRow> rows, final String outputColumnName,
+            final boolean overwrite, final CurieCandidatePlan plan,
+            final Map<Integer, NodeNormalizationResult> selectedResults) {
         if (table.getColumn(outputColumnName) == null)
             table.createColumn(outputColumnName, String.class, false);
 
-        final Map<Integer, String> curieByRowIndex = new LinkedHashMap<Integer, String>();
-        for (final Map.Entry<String, List<Integer>> entry : prepared.getRowsByCurie().entrySet()) {
-            for (final Integer rowIndex : entry.getValue())
-                curieByRowIndex.put(rowIndex, entry.getKey());
-        }
-
+        final Map<Integer, PreparedIdentifier> preparedByRowIndex = new LinkedHashMap<Integer, PreparedIdentifier>();
+        for (final PreparedIdentifier preparedIdentifier : plan.getPreparedIdentifiers())
+            preparedByRowIndex.put(Integer.valueOf(preparedIdentifier.getRowIndex()), preparedIdentifier);
         for (int i = 0; i < rows.size(); i++) {
             final CyRow row = rows.get(i);
             if (overwrite)
                 row.set(outputColumnName, null);
-            final String curie = curieByRowIndex.get(Integer.valueOf(i));
-            if (curie == null)
+            if (!preparedByRowIndex.containsKey(Integer.valueOf(i)))
                 continue;
 
-            final NodeNormalizationResult result = results.get(curie);
+            final NodeNormalizationResult result = selectedResults.get(Integer.valueOf(i));
             row.set(outputColumnName, result != null && result.isResolved() ? result.getCanonicalCurie() : null);
         }
     }

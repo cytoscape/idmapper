@@ -11,6 +11,9 @@ import org.json.simple.JSONObject;
  */
 public final class NormalizeIdentifiersSummary {
     private int rowsExamined;
+    private int rowsWithPrefixGuesses;
+    private int rowsWithFormatFilteredGuesses;
+    private int candidateCuriesSubmitted;
     private int uniqueCuriesSubmitted;
     private int successfullyNormalized;
     private int unresolved;
@@ -35,6 +38,30 @@ public final class NormalizeIdentifiersSummary {
      */
     public void setRowsExamined(final int rowsExamined) {
         this.rowsExamined = rowsExamined;
+    }
+
+    public int getRowsWithPrefixGuesses() {
+        return rowsWithPrefixGuesses;
+    }
+
+    public void setRowsWithPrefixGuesses(final int rowsWithPrefixGuesses) {
+        this.rowsWithPrefixGuesses = rowsWithPrefixGuesses;
+    }
+
+    public int getRowsWithFormatFilteredGuesses() {
+        return rowsWithFormatFilteredGuesses;
+    }
+
+    public void setRowsWithFormatFilteredGuesses(final int rowsWithFormatFilteredGuesses) {
+        this.rowsWithFormatFilteredGuesses = rowsWithFormatFilteredGuesses;
+    }
+
+    public int getCandidateCuriesSubmitted() {
+        return candidateCuriesSubmitted;
+    }
+
+    public void setCandidateCuriesSubmitted(final int candidateCuriesSubmitted) {
+        this.candidateCuriesSubmitted = candidateCuriesSubmitted;
     }
 
     /**
@@ -176,6 +203,9 @@ public final class NormalizeIdentifiersSummary {
     public String toJson() {
         final JSONObject object = new JSONObject();
         object.put("rowsExamined", rowsExamined);
+        object.put("rowsWithPrefixGuesses", rowsWithPrefixGuesses);
+        object.put("rowsWithFormatFilteredGuesses", rowsWithFormatFilteredGuesses);
+        object.put("candidateCuriesSubmitted", candidateCuriesSubmitted);
         object.put("uniqueCuriesSubmitted", uniqueCuriesSubmitted);
         object.put("successfullyNormalized", successfullyNormalized);
         object.put("unresolved", unresolved);
@@ -196,6 +226,9 @@ public final class NormalizeIdentifiersSummary {
         final StringBuilder sb = new StringBuilder();
         sb.append("Normalize Identifiers complete.\n");
         sb.append("Rows examined: ").append(rowsExamined).append('\n');
+        sb.append("Rows with prefix guesses: ").append(rowsWithPrefixGuesses).append('\n');
+        sb.append("Rows with format-filtered guesses: ").append(rowsWithFormatFilteredGuesses).append('\n');
+        sb.append("Candidate CURIEs submitted: ").append(candidateCuriesSubmitted).append('\n');
         sb.append("Unique CURIEs submitted: ").append(uniqueCuriesSubmitted).append('\n');
         sb.append("Successfully normalized: ").append(successfullyNormalized).append('\n');
         sb.append("Unresolved: ").append(unresolved).append('\n');

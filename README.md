@@ -48,6 +48,8 @@ If the column contains unprefixed identifiers, supply a CURIE prefix in the dial
 
 In the Cytoscape desktop dialog, the CURIE prefix field is an editable suggested-value list. Suggestions are loaded from the Node Normalization prefix catalog and displayed with entity counts. If the catalog is unavailable, the field remains editable and manually entered prefixes still work.
 
+The dialog also includes **Guess CURIE prefix for unprefixed values**. When enabled, unprefixed values are expanded into candidate CURIEs using the typed prefix, prefixes already observed in the selected column, identifier-format rules, and the prefix catalog. Format rules reduce obvious cases such as Ensembl-like and UniProt-like identifiers before falling back to catalog-count ordering. Numeric values use a smaller numeric-compatible prefix set.
+
 The operation creates a scalar String output column containing the canonical identifier returned as the normalized node's primary id. The default output column name is:
 
 ```text
@@ -77,12 +79,14 @@ outputColumnName  Optional output column name; defaults to idmapper::normalized:
 batchSize         Optional positive integer overriding the configured default
 serviceUrl        Optional per-command service base URL override
 overwrite         Optional boolean allowing reuse of an existing String output column
+guessPrefix       Optional boolean that tries suggested prefixes for unprefixed values
+maxPrefixGuesses  Optional positive integer limiting guesses per unprefixed value
 ```
 
 Example:
 
 ```text
-idmapper normalize network=current table="default node" columnName=name prefix=HGNC outputColumnName="idmapper::normalized::name" batchSize=500
+idmapper normalize network=current table="default node" columnName=name prefix=HGNC outputColumnName="idmapper::normalized::name" batchSize=500 guessPrefix=true maxPrefixGuesses=25
 ```
 
 The command returns a JSON summary containing row count, submitted unique CURIE count, normalized count, unresolved count, failed batch count, cancellation state, output column name, and errors.
@@ -98,7 +102,9 @@ curl -X POST 'http://localhost:1234/v1/commands/idmapper/normalize' \
     "columnName": "name",
     "prefix": "HGNC",
     "outputColumnName": "idmapper::normalized::name",
-    "batchSize": 500
+    "batchSize": 500,
+    "guessPrefix": true,
+    "maxPrefixGuesses": 25
   }'
 ```
 
@@ -112,4 +118,6 @@ idmapper.nodeNormalization.batchSize=500
 idmapper.nodeNormalization.connectTimeout=10000
 idmapper.nodeNormalization.requestTimeout=30000
 idmapper.nodeNormalization.curiePrefixesCacheTtl=86400000
+idmapper.nodeNormalization.maxPrefixGuesses=25
+idmapper.nodeNormalization.useIdentifierFormatFilters=true
 ```
